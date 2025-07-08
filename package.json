@@ -37,7 +37,7 @@
     "dayjs": "^1.11.13",
     "embla-carousel": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
-    "mantine-contextmenu": "^8.1.2",
+    "mantine-contextmenu": "^7.0.0",
     "mantine-datatable": "^8.1.2",
     "react": "18.2.0",
     "react-contextmenu": "^2.14.0",
