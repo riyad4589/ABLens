@@ -1,0 +1,36 @@
+.
+├── README.md
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── public
+│   └── vite.svg
+├── src
+│   ├── assets
+│   │   ├── ablens.jpg
+│   │   ├── ablens2.jpg
+│   │   └── ablens3.jpg
+│   ├── components
+│   │   ├── BarChart.jsx
+│   │   ├── DonutChart.jsx
+│   │   ├── Sidebar.jsx
+│   │   └── StatsCards.jsx
+│   ├── dashboard.css
+│   ├── data
+│   │   └── mockData.js
+│   ├── index.css
+│   ├── main.jsx
+│   ├── modal
+│   │   ├── NewTicketForm.jsx
+│   │   ├── TicketActionsModal.jsx
+│   │   └── TicketDetailModal.jsx
+│   ├── pages
+│   │   ├── Dashboard.jsx
+│   │   └── Ticket.jsx
+│   └── style
+│       └── TicketModalStyles.module.css
+├── tree.txt
+└── vite.config.js
+
+9 directories, 25 files
