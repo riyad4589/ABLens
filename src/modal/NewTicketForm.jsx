@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import "../style/NewTicketForm.css";
+import "../dashboard.css";
 import { MdSave, MdClose } from "react-icons/md";
 
 export default function NewTicketForm({ onClose }) {
-  // États pour les champs du formulaire (à compléter selon besoin)
   const [priority, setPriority] = useState("NORMAL");
   const [type, setType] = useState("Internal");
   const priorities = [
@@ -16,18 +15,17 @@ export default function NewTicketForm({ onClose }) {
   // Ferme la modale si on clique sur l'overlay
   const handleOverlayClick = (e) => {
     if (e.target.classList.contains("modal-overlay")) {
-      onClose();
+      onClose && onClose();
     }
   };
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="modal-content">
-        {/* Bouton X pour fermer la fenêtre */}
         <button className="modal-close-btn" onClick={onClose} title="Fermer">
-          <MdClose className="newticketform-close-icon" />
+          <MdClose style={{ fontSize: '1.25em', display: 'block', margin: 'auto' }} />
         </button>
-        <h2 className="newticketform-title">New Ticket Information :</h2>
+        <h2 style={{ marginBottom: 18 }}>New Ticket Information :</h2>
         <form className="ticket-form">
           <div className="form-row">
             <label>Customer<span className="required">*</span></label>
@@ -53,7 +51,7 @@ export default function NewTicketForm({ onClose }) {
                   type="button"
                   key={p.label}
                   className={`priority-btn${priority === p.label ? " active" : ""}`}
-                  data-priority={p.label}
+                  style={{ background: priority === p.label ? p.color : "#fff", color: priority === p.label ? "#fff" : p.color, borderColor: p.color }}
                   onClick={() => setPriority(p.label)}
                 >
                   {p.label === "HIGH" ? "✔ HIGH" : p.label}
@@ -90,7 +88,7 @@ export default function NewTicketForm({ onClose }) {
           </div>
           <div className="form-actions single-action">
             <button type="submit" className="save-btn">
-              <MdSave className="newticketform-save-icon" />
+              <MdSave style={{ marginRight: 8, fontSize: '1.3em', verticalAlign: 'middle' }} />
               Enregistrer
             </button>
           </div>

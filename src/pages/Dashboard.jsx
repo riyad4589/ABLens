@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
-import "./style/dashboard.css";
+import "../dashboard.css";
 import StatsCards from "../components/StatsCards";
 import { MdConfirmationNumber } from "react-icons/md";
 import CustomBarChart from "../components/BarChart";
@@ -20,7 +20,7 @@ function Dashboard() {
         <div className="dashboard-header">
           <h1>Tableau de bord</h1>
           <button className="new-ticket-btn" onClick={() => setShowNewTicket(true)}>
-            <MdConfirmationNumber className="ticket-icon" /> New Ticket
+            <MdConfirmationNumber className="ticket-icon" /> Nouveau Ticket
           </button>
         </div>
         <StatsCards />
