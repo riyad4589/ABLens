@@ -1,0 +1,174 @@
+/* =========================
+   Styles pour NewTicketForm.jsx
+   ========================= */
+
+.modal-overlay {
+  z-index: 10000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  max-width: 500px;
+  width: 98vw;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 32px 24px 24px 24px;
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 32px rgba(24,49,83,0.10);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 32px;
+  color: #888;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.newticketform-close-icon {
+  font-size: 1.25em;
+  display: block;
+  margin: auto;
+}
+
+.newticketform-title {
+  margin-bottom: 18px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #174189;
+}
+
+.ticket-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.form-row label {
+  font-weight: 600;
+  color: #174189;
+  margin-bottom: 2px;
+}
+.required {
+  color: #ff4d4f;
+  margin-left: 2px;
+}
+input[type="text"],
+select,
+textarea {
+  border: 1.5px solid #e0e6ed;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 15px;
+  background: #f7f9fb;
+  color: #222;
+}
+textarea {
+  resize: vertical;
+}
+.priority-row {
+  align-items: flex-start;
+}
+.priority-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.priority-btn {
+  border: 2px solid #b0bed9;
+  border-radius: 6px;
+  background: #fff;
+  color: #b0bed9;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 4px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.priority-btn[data-priority="LOW"] {
+  border-color: #b0bed9;
+  color: #b0bed9;
+}
+.priority-btn[data-priority="NORMAL"] {
+  border-color: #2176bd;
+  color: #2176bd;
+}
+.priority-btn[data-priority="HIGH"] {
+  border-color: #f7b731;
+  color: #f7b731;
+}
+.priority-btn[data-priority="URGENT"] {
+  border-color: #ff4d4f;
+  color: #ff4d4f;
+}
+.priority-btn.active[data-priority="LOW"] {
+  background: #b0bed9;
+  color: #fff;
+}
+.priority-btn.active[data-priority="NORMAL"] {
+  background: #2176bd;
+  color: #fff;
+}
+.priority-btn.active[data-priority="HIGH"] {
+  background: #f7b731;
+  color: #fff;
+}
+.priority-btn.active[data-priority="URGENT"] {
+  background: #ff4d4f;
+  color: #fff;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+.single-action {
+  width: 100%;
+}
+.save-btn {
+  background: #2176bd;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+.save-btn:hover {
+  background: #174189;
+}
+.newticketform-save-icon {
+  margin-right: 8px;
+  font-size: 1.3em;
+  vertical-align: middle;
+}
+
+/* =========================
+   Fin des styles NewTicketForm.jsx
+   ========================= */ 

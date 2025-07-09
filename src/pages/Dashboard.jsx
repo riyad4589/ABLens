@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
-import "../dashboard.css";
+import "./style/dashboard.css";
 import StatsCards from "../components/StatsCards";
 import { MdConfirmationNumber } from "react-icons/md";
 import CustomBarChart from "../components/BarChart";

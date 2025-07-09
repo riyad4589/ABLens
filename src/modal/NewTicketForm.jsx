@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../dashboard.css";
+import "../style/NewTicketForm.css";
 import { MdSave, MdClose } from "react-icons/md";
 
 export default function NewTicketForm({ onClose }) {
@@ -25,9 +25,9 @@ export default function NewTicketForm({ onClose }) {
       <div className="modal-content">
         {/* Bouton X pour fermer la fenêtre */}
         <button className="modal-close-btn" onClick={onClose} title="Fermer">
-          <MdClose style={{ fontSize: '1.25em', display: 'block', margin: 'auto' }} />
+          <MdClose className="newticketform-close-icon" />
         </button>
-        <h2 style={{ marginBottom: 18 }}>New Ticket Information :</h2>
+        <h2 className="newticketform-title">New Ticket Information :</h2>
         <form className="ticket-form">
           <div className="form-row">
             <label>Customer<span className="required">*</span></label>
@@ -53,7 +53,7 @@ export default function NewTicketForm({ onClose }) {
                   type="button"
                   key={p.label}
                   className={`priority-btn${priority === p.label ? " active" : ""}`}
-                  style={{ background: priority === p.label ? p.color : "#fff", color: priority === p.label ? "#fff" : p.color, borderColor: p.color }}
+                  data-priority={p.label}
                   onClick={() => setPriority(p.label)}
                 >
                   {p.label === "HIGH" ? "✔ HIGH" : p.label}
@@ -90,7 +90,7 @@ export default function NewTicketForm({ onClose }) {
           </div>
           <div className="form-actions single-action">
             <button type="submit" className="save-btn">
-              <MdSave style={{ marginRight: 8, fontSize: '1.3em', verticalAlign: 'middle' }} />
+              <MdSave className="newticketform-save-icon" />
               Enregistrer
             </button>
           </div>

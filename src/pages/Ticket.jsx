@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import NewTicketForm from "../modal/NewTicketForm";
 import "../dashboard.css";
+import "../style/ticket.css";
 import { MdConfirmationNumber, MdRemoveRedEye, MdRefresh } from "react-icons/md";
 import { DataGrid } from '@mui/x-data-grid';
 import Box from '@mui/material/Box';
@@ -23,52 +24,55 @@ const priorityColors = {
   URGENT: "#ff4d4f"
 };
 
+// =========================
+// Section : Modal Détail Ticket
+// =========================
 function TicketDetailModal({ ticket, onClose }) {
   if (!ticket) return null;
   return (
-    <div className="modal-overlay" style={{ zIndex: 10000 }} onClick={e => { if (e.target.classList.contains('modal-overlay')) onClose(); }}>
-      <div className="modal-content" style={{ maxWidth: 1100, width: '98vw', minHeight: 500, display: 'flex', flexDirection: 'row', gap: 32, padding: 32, position: 'relative' }}>
+    <div className="modal-overlay" onClick={e => { if (e.target.classList.contains('modal-overlay')) onClose(); }}>
+      <div className="modal-content">
         {/* Bouton de fermeture */}
         <button className="modal-close-btn" onClick={onClose} title="Fermer">×</button>
-        <div style={{ flex: 2, minWidth: 0 }}>
-          <h2 style={{ fontWeight: 700, fontSize: 24, marginBottom: 18 }}>Ticket N° {ticket.id}</h2>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginBottom: 10 }}>
-            <div>Created : <b>{ticket.created}</b> <span style={{ color: '#888', fontSize: 13 }}>({ticket.date})</span></div>
+        <div className="ticket-modal-main">
+          <h2 className="ticket-modal-title">Ticket N° {ticket.id}</h2>
+          <div className="ticket-modal-infos">
+            <div>Created : <b>{ticket.created}</b> <span className="ticket-modal-date">({ticket.date})</span></div>
             <div>Order Number : <b>{ticket.orderNumber}</b></div>
-            <div>Priority : <span style={{ background: priorityColors[ticket.priority], color: '#fff', borderRadius: 6, padding: '2px 12px', fontWeight: 600, fontSize: 15 }}>{ticket.priority}</span></div>
+            <div>Priority : <span className={`priority-badge priority-${ticket.priority.toLowerCase()}`}>{ticket.priority}</span></div>
             <div>Motif : <b>{ticket.motive}</b></div>
-            <div>Tags : {ticket.tags.map((tag, i) => <span key={i} style={{ background: '#e0e6ed', color: '#174189', borderRadius: 6, padding: '2px 8px', fontWeight: 500, fontSize: 14, marginRight: 6 }}>{tag}</span>)}</div>
+            <div>Tags : {ticket.tags.map((tag, i) => <span key={i} className="ticket-tag">{tag}</span>)}</div>
             <div>Team : <b>{ticket.team}</b></div>
           </div>
-          <div style={{ margin: '24px 0 32px 0', maxWidth: 600 }}>
-            <div style={{ background: '#2176bd', color: '#fff', borderRadius: 8, padding: 16, display: 'flex', alignItems: 'center', gap: 10, fontWeight: 500 }}>
-              <span style={{ fontSize: 22, background: '#174189', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✉️</span>
+          <div className="ticket-claim-block">
+            <div className="ticket-claim-header">
+              <span className="ticket-claim-icon">✉️</span>
               <span>Ticket Claim:</span>
             </div>
-            <div style={{ background: '#eaf2fb', borderRadius: 0, padding: 18, fontSize: 16, color: '#174189', fontWeight: 500 }}>{ticket.claim}</div>
+            <div className="ticket-claim-content">{ticket.claim}</div>
           </div>
-          <div style={{ marginTop: 32 }}>
-            <input type="text" placeholder="type a comment" style={{ width: '100%', border: '1.5px solid #e0e6ed', borderRadius: 6, padding: 10, fontSize: 15 }} />
+          <div className="ticket-comment-block">
+            <input type="text" placeholder="type a comment" className="ticket-comment-input" />
           </div>
         </div>
-        <div style={{ flex: 1, minWidth: 220, borderLeft: '1.5px solid #e0e6ed', paddingLeft: 24 }}>
-          <div style={{ marginBottom: 32 }}>
-            <div style={{ color: '#2176bd', fontWeight: 700, fontSize: 18, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 22, background: '#e0e6ed', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🛈</span>
+        <div className="ticket-modal-side">
+          <div className="ticket-timeline-block">
+            <div className="ticket-timeline-header">
+              <span className="ticket-timeline-icon">🛈</span>
               Ticket Created
             </div>
-            <div style={{ color: '#555', fontSize: 15 }}>{ticket.timeline[0]?.detail}</div>
-            <div style={{ color: '#b0bed9', fontSize: 13, marginTop: 4 }}>{ticket.timeline[0]?.time}</div>
+            <div className="ticket-timeline-detail">{ticket.timeline[0]?.detail}</div>
+            <div className="ticket-timeline-time">{ticket.timeline[0]?.time}</div>
           </div>
-          <div style={{ marginTop: 32 }}>
-            <div style={{ color: '#174189', fontWeight: 700, fontSize: 17, marginBottom: 10 }}>Client Info:</div>
-            <div style={{ color: '#222', fontSize: 15, marginBottom: 6 }}><b>Store Name:</b> {ticket.client.name}</div>
-            <div style={{ color: '#222', fontSize: 15, marginBottom: 6 }}><b>City:</b> {ticket.client.city}</div>
-            <div style={{ color: '#222', fontSize: 15, marginBottom: 6 }}><b>Phone:</b> {ticket.client.phone}</div>
-            <div style={{ color: '#222', fontSize: 15, marginBottom: 6 }}><b>Address:</b> {ticket.client.address}</div>
+          <div className="ticket-client-block">
+            <div className="ticket-client-header">Client Info:</div>
+            <div className="ticket-client-info"><b>Store Name:</b> {ticket.client.name}</div>
+            <div className="ticket-client-info"><b>City:</b> {ticket.client.city}</div>
+            <div className="ticket-client-info"><b>Phone:</b> {ticket.client.phone}</div>
+            <div className="ticket-client-info"><b>Address:</b> {ticket.client.address}</div>
           </div>
         </div>
-        <button style={{ position: 'absolute', top: 24, right: 24, background: '#ff4d4f', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 17, display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 2px 8px rgba(24,49,83,0.08)', cursor: 'pointer' }}>Close Ticket</button>
+        <button className="ticket-close-btn">Close Ticket</button>
       </div>
     </div>
   );
@@ -86,7 +90,9 @@ function compareStatus(a, b, asc) {
   return asc ? diff : -diff;
 }
 
-// Colonnes pour DataGrid MUI
+// =========================
+// Section : Colonnes DataGrid
+// =========================
 const columns = [
   { field: 'id', headerName: 'ID', width: 70 },
   { field: 'subject', headerName: 'Sujet', flex: 1, minWidth: 180 },
@@ -96,7 +102,11 @@ const columns = [
     headerName: 'Statut',
     width: 120,
     renderCell: (params) => (
-      <span style={{ color: params.value === 'Ouvert' ? '#1ecb7b' : params.value === 'Fermé' ? '#b0bed9' : '#f7b731', fontWeight: 600 }}>{params.value}</span>
+      <span className={
+        params.value === 'Ouvert' ? 'status-ouvert' :
+        params.value === 'Fermé' ? 'status-ferme' :
+        'status-attente'
+      }>{params.value}</span>
     ),
   },
   {
@@ -104,7 +114,7 @@ const columns = [
     headerName: 'Priorité',
     width: 120,
     renderCell: (params) => (
-      <span style={{ background: priorityColors[params.value], color: '#fff', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 15 }}>{params.value}</span>
+      <span className={`priority-badge priority-${params.value.toLowerCase()}`}>{params.value}</span>
     ),
   },
   { field: 'date', headerName: 'Date', width: 120 },
@@ -119,21 +129,9 @@ const columns = [
       <Link
         to={`/tickets/${params.row.id}`}
         title="Voir le ticket"
-        style={{
-          color: '#1976d2',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '100%',
-          height: '100%',
-          background: 'transparent',
-          border: 'none',
-          outline: 'none',
-          textDecoration: 'none',
-          cursor: 'pointer',
-        }}
+        className="ticket-action-link"
       >
-        <MdRemoveRedEye style={{ fontSize: 22 }} />
+        <MdRemoveRedEye className="ticket-action-icon" />
       </Link>
     ),
   },
@@ -197,28 +195,28 @@ export default function Ticket() {
   }, []);
 
   return (
-    <div className="dashboard-layout" style={{ height: '100vh', overflow: 'hidden' }}>
+    <div className="dashboard-layout">
       <Sidebar />
-      <main className="dashboard-main" style={{ minHeight: '100vh', height: '100vh', overflow: 'hidden', background: '#f7f9fb', padding: 32 }}>
-        <div className="dashboard-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      <main className="dashboard-main">
+        <div className="dashboard-header">
           <h1>Tickets</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div className="dashboard-header-actions">
             <button className="new-ticket-btn" onClick={() => setShowNewTicket(true)}>
               <MdConfirmationNumber className="ticket-icon" /> Nouveau Ticket
             </button>
           </div>
         </div>
         {/* Bouton de réinitialisation du tri */}
-        <div style={{ marginBottom: 12 }}>
+        <div className="dashboard-refresh-block">
           <button
             onClick={handleRefresh}
-            style={{ background: '#e0e6ed', color: '#174189', border: 'none', borderRadius: 6, padding: '7px 12px', fontWeight: 600, fontSize: 18, cursor: 'pointer', boxShadow: '0 1px 4px rgba(24,49,83,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            className="dashboard-refresh-btn"
             title="Rafraîchir / Réinitialiser le tableau"
           >
             <MdRefresh />
           </button>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', minHeight: '60vh', width: '100%' }}>
+        <div className="dashboard-table-block">
           <Box display="flex" justifyContent="center" alignItems="flex-start" minHeight="60vh" width="100%">
             <Box sx={{ width: '100%', maxWidth: 1100 }}>
               <DataGrid

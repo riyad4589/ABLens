@@ -1,3 +1,7 @@
+/* =========================
+   Styles pour Dashboard.jsx
+   ========================= */
+
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
