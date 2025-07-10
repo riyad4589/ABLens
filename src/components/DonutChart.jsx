@@ -1,3 +1,7 @@
+// Ce fichier définit le composant React DonutChart.
+// Il affiche un graphique en anneau (donut) pour la répartition des tickets par catégorie avec recharts.
+// Contient la gestion du survol, la légende, le total au centre et le tooltip personnalisé.
+// Utilisé pour visualiser la répartition des tickets dans le dashboard.
 import React, { useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Sector, Tooltip } from "recharts";
 import { pieChartData } from '../data/mockData';

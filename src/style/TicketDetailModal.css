@@ -1,0 +1,203 @@
+/*
+Ce fichier contient les styles CSS pour la modale de détail d'un ticket (TicketDetailModal).
+Il définit l'apparence de la modale, des sections info, timeline, client, et des boutons.
+Utilisé pour personnaliser l'affichage des détails d'un ticket.
+*/
+.modal-overlay {
+    z-index: 10000;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .modal-content {
+    background: #fff;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: row;
+    gap: 32px;
+    padding: 32px;
+    max-width: 1100px;
+    width: 98vw;
+    min-height: 500px;
+    position: relative;
+  }
+  
+  .modal-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 28px;
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+  }
+  
+  .modal-left {
+    flex: 2;
+    min-width: 0;
+  }
+  
+  .modal-right {
+    flex: 1;
+    min-width: 220px;
+    border-left: 1.5px solid #e0e6ed;
+    padding-left: 24px;
+  }
+  
+  .modal-title {
+    font-weight: 700;
+    font-size: 24px;
+    margin-bottom: 18px;
+  }
+  
+  .ticket-info-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .ticket-date {
+    color: #888;
+    font-size: 13px;
+  }
+  
+  .priority-tag {
+    color: #fff;
+    border-radius: 6px;
+    padding: 2px 12px;
+    font-weight: 600;
+    font-size: 15px;
+    margin-left: 8px;
+  }
+  
+  .ticket-tag {
+    background: #e0e6ed;
+    color: #174189;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-weight: 500;
+    font-size: 14px;
+    margin-right: 6px;
+  }
+  
+  .claim-section {
+    margin: 24px 0 32px 0;
+    max-width: 600px;
+  }
+  
+  .claim-header {
+    background: #2176bd;
+    color: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+  }
+  
+  .claim-icon {
+    font-size: 22px;
+    background: #174189;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .claim-content {
+    background: #eaf2fb;
+    padding: 18px;
+    font-size: 16px;
+    color: #174189;
+    font-weight: 500;
+    border-radius: 0;
+  }
+  
+  .comment-section {
+    margin-top: 32px;
+  }
+  
+  .comment-input {
+    width: 100%;
+    border: 1.5px solid #e0e6ed;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 15px;
+  }
+  
+  .timeline-block {
+    margin-bottom: 32px;
+  }
+  
+  .timeline-title {
+    color: #2176bd;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .timeline-icon {
+    font-size: 22px;
+    background: #e0e6ed;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .timeline-detail {
+    color: #555;
+    font-size: 15px;
+  }
+  
+  .timeline-time {
+    color: #b0bed9;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  
+  .client-info-block {
+    margin-top: 32px;
+    color: #222;
+    font-size: 15px;
+  }
+  
+  .client-title {
+    color: #174189;
+    font-weight: 700;
+    font-size: 17px;
+    margin-bottom: 10px;
+  }
+  
+  .close-ticket-btn {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    background: #ff4d4f;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-weight: 700;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(24, 49, 83, 0.08);
+    cursor: pointer;
+  }
+  

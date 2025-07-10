@@ -1,3 +1,6 @@
+// Ce fichier définit la page Settings de l'application.
+// Il affiche les paramètres (rôles, permissions, départements, utilisateurs) avec navigation par onglets.
+// Utilisé pour la gestion des paramètres administratifs de l'application.
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 

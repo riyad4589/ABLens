@@ -1,3 +1,6 @@
+// Ce fichier définit le composant React Sidebar.
+// Il affiche la barre latérale de navigation avec le logo, les liens vers les pages principales et le bouton de déconnexion.
+// Utilisé sur toutes les pages principales de l'application pour la navigation.
 import React from "react";
 import "../dashboard.css";
 import logo from "../assets/ablens2.jpg";

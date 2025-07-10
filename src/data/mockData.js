@@ -1,3 +1,6 @@
+// Ce fichier contient des données factices (mock) pour les graphiques du dashboard.
+// Inclut les données pour le donut chart (pieChartData) et le bar chart (barChartData).
+// Utilisé pour simuler les statistiques de tickets.
 // Données pour le donut chart (pieChartData)
 export const pieChartData = [
   { name: 'Internal', value: 2500, color: '#4fc3f7' },

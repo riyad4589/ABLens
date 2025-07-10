@@ -1,3 +1,6 @@
+// Ce fichier définit la page Dashboard de l'application.
+// Il affiche le tableau de bord avec les statistiques, graphiques, et permet la création rapide d'un ticket.
+// Utilisé comme page d'accueil après connexion.
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import "../dashboard.css";

@@ -1,3 +1,8 @@
+/*
+Ce fichier contient les styles CSS globaux de l'application.
+Il définit les styles de base, la typographie, la gestion des couleurs, et la responsivité générale.
+Utilisé pour harmoniser l'apparence sur toutes les pages.
+*/
 html, body, #root {
   margin: 0;
   padding: 0;

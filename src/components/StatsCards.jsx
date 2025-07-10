@@ -1,3 +1,6 @@
+// Ce fichier définit le composant React StatsCards.
+// Il affiche des cartes de statistiques (tickets ouverts, créés, fermés, urgents) avec leurs tendances.
+// Utilisé dans le dashboard pour donner un aperçu rapide des indicateurs clés.
 import React from "react";
 import "../dashboard.css";
 

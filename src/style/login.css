@@ -1,3 +1,8 @@
+/*
+Ce fichier contient les styles CSS pour la page de connexion (Login).
+Il définit l'apparence du formulaire, du logo, des champs et du bouton de connexion.
+Utilisé pour personnaliser l'interface de la page Login.
+*/
 .login-container {
   min-height: 100vh;
   display: flex;

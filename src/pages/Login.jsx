@@ -1,3 +1,6 @@
+// Ce fichier définit la page de connexion (Login) de l'application.
+// Il affiche le formulaire d'authentification avec gestion des champs et redirection après connexion.
+// Utilisé pour accéder à l'application de gestion des tickets.
 import React, { useState, useEffect } from "react";
 import "../style/login.css";
 import ablensLogo from "../assets/ablens.jpg";

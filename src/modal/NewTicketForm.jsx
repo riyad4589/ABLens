@@ -1,3 +1,6 @@
+// Ce fichier définit le composant React NewTicketForm.
+// Il affiche un formulaire dans une modale pour créer un nouveau ticket avec gestion des champs, priorités et validation.
+// Utilisé pour l'ajout de tickets dans l'application.
 import React, { useState } from "react";
 import "../dashboard.css";
 import { MdSave, MdClose } from "react-icons/md";

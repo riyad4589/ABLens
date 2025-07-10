@@ -1,3 +1,6 @@
+// Ce fichier définit la page TicketDetail de l'application.
+// Il affiche le détail complet d'un ticket sélectionné, avec timeline, messages, et informations client.
+// Utilisé pour consulter et interagir avec un ticket spécifique.
 import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import "../dashboard.css";

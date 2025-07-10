@@ -1,3 +1,6 @@
+// Ce fichier définit la page Reports de l'application.
+// Il sert de base pour l'affichage des rapports et statistiques avancées (actuellement vide).
+// Utilisé pour la future extension des rapports dans l'application.
 import React, { useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 

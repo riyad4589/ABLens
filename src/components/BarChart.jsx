@@ -1,3 +1,7 @@
+// Ce fichier définit le composant React CustomBarChart.
+// Il affiche un graphique en barres (tickets créés/fermés par jour) avec la bibliothèque recharts.
+// Contient la configuration des couleurs, des données de test, un tooltip personnalisé et la légende.
+// Utilisé pour visualiser les statistiques de tickets dans le dashboard.
 import React, { useState } from "react";
 import {
   BarChart,
