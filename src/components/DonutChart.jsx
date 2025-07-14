@@ -37,59 +37,55 @@ export default function DonutChart() {
     <div style={{ display: "flex", alignItems: "center", gap: 48, width: "100%", margin: "32px 0 0 0", minHeight: 240, maxWidth: 900 }}>
       {/* Donut chart */}
       <div style={{ width: 340, minWidth: 220, height: 220, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={pieChartData}
-              cx="50%"
-              cy="50%"
-              startAngle={0}
-              endAngle={360}
-              innerRadius={68}
-              outerRadius={96}
-              paddingAngle={8}
-              dataKey="value"
-              stroke="none"
-              isAnimationActive={true}
-              animationDuration={900}
-              activeIndex={activeIndex}
-              activeShape={renderActiveShape}
-              onMouseEnter={(_, idx) => setActiveIndex(idx)}
-              onMouseLeave={() => setActiveIndex(null)}
-            >
-              {pieChartData.map((entry, idx) => (
-                <Cell key={`cell-${idx}`} fill={entry.color} cursor="pointer" />
-              ))}
-            </Pie>
-
-            {/* Total au centre du donut */}
-            <text
-              x="50%"
-              y="50%"
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize="32"
-              fontWeight="bold"
-              fill="#174189"
-              style={{ textShadow: '0 2px 8px #fff' }}
-            >
-              {total}
-            </text>
-
-            {/* Tooltip au survol */}
-            <Tooltip
-              contentStyle={{
-                borderRadius: 12,
-                backgroundColor: "#fff",
-                border: "1.5px solid #174189",
-                fontSize: 14,
-                boxShadow: "0 4px 16px rgba(23,65,137,0.12)"
-              }}
-              labelStyle={{ fontWeight: "bold", color: "#174189" }}
-              formatter={(value, name, props) => [`${value}`, props.payload.name]}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+        <PieChart width={340} height={220}>
+          <Pie
+            data={pieChartData}
+            cx="50%"
+            cy="50%"
+            startAngle={0}
+            endAngle={360}
+            innerRadius={68}
+            outerRadius={96}
+            paddingAngle={8}
+            dataKey="value"
+            stroke="none"
+            isAnimationActive={true}
+            animationDuration={900}
+            activeIndex={activeIndex}
+            activeShape={renderActiveShape}
+            onMouseEnter={(_, idx) => setActiveIndex(idx)}
+            onMouseLeave={() => setActiveIndex(null)}
+          >
+            {pieChartData.map((entry, idx) => (
+              <Cell key={`cell-${idx}`} fill={entry.color} cursor="pointer" />
+            ))}
+          </Pie>
+          {/* Total au centre du donut */}
+          <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize="32"
+            fontWeight="bold"
+            fill="#174189"
+            style={{ textShadow: '0 2px 8px #fff' }}
+          >
+            {total}
+          </text>
+          {/* Tooltip au survol */}
+          <Tooltip
+            contentStyle={{
+              borderRadius: 12,
+              backgroundColor: "#fff",
+              border: "1.5px solid #174189",
+              fontSize: 14,
+              boxShadow: "0 4px 16px rgba(23,65,137,0.12)"
+            }}
+            labelStyle={{ fontWeight: "bold", color: "#174189" }}
+            formatter={(value, name, props) => [`${value}`, props.payload.name]}
+          />
+        </PieChart>
       </div>
 
       {/* Légende */}

@@ -3,19 +3,21 @@
 // Utilisé pour initialiser et organiser la navigation de l'application.
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
+
 import Dashboard from './pages/Dashboard'
 import Ticket from './pages/Ticket'
 import TicketDetail from './pages/TicketDetail'
 import Login from './pages/Login';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
-import { MantineProvider } from '@mantine/core'
+import { MantineProvider } from '@mantine/core';
+import '@mantine/core/styles.css';
+import 'mantine-datatable/styles.layer.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <MantineProvider>
+    <MantineProvider defaultColorScheme="auto">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Login />} />

@@ -12,36 +12,30 @@ const priorityColors = {
 };
 
 export const ticketColumns = [
-  { field: 'id', headerName: 'ID', width: 70 },
-  { field: 'subject', headerName: 'Sujet', flex: 1, minWidth: 180 },
-  { field: 'customer', headerName: 'Client', flex: 1, minWidth: 140 },
+  { accessor: 'id', title: 'ID' },
+  { accessor: 'subject', title: 'Sujet' },
+  { accessor: 'customer', title: 'Client' },
   {
-    field: 'status',
-    headerName: 'Statut',
-    width: 120,
-    renderCell: (params) => (
-      <span style={{ color: params.value === 'Ouvert' ? '#1ecb7b' : params.value === 'Fermé' ? '#b0bed9' : '#f7b731', fontWeight: 600 }}>{params.value}</span>
+    accessor: 'status',
+    title: 'Statut',
+    render: (ticket) => (
+      <span style={{ color: ticket.status === 'Ouvert' ? '#1ecb7b' : ticket.status === 'Fermé' ? '#b0bed9' : '#f7b731', fontWeight: 600 }}>{ticket.status}</span>
     ),
   },
   {
-    field: 'priority',
-    headerName: 'Priorité',
-    width: 120,
-    renderCell: (params) => (
-      <span style={{ background: priorityColors[params.value], color: '#fff', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 15 }}>{params.value}</span>
+    accessor: 'priority',
+    title: 'Priorité',
+    render: (ticket) => (
+      <span style={{ background: priorityColors[ticket.priority], color: '#fff', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 15 }}>{ticket.priority}</span>
     ),
   },
-  { field: 'date', headerName: 'Date', width: 120 },
+  { accessor: 'date', title: 'Date' },
   {
-    field: 'action',
-    headerName: 'Action',
-    width: 110,
-    sortable: false,
-    filterable: false,
-    cellClassName: 'action-cell-center',
-    renderCell: (params) => (
+    accessor: 'action',
+    title: 'Action',
+    render: (ticket) => (
       <Link
-        to={`/tickets/${params.row.id}`}
+        to={`/tickets/${ticket.id}`}
         title="Voir le ticket"
         style={{
           color: '#1976d2',

@@ -51,10 +51,10 @@ const CustomTooltip = ({ active, payload, label }) => {
       }}>
         <div style={{ fontWeight: 700, marginBottom: 8, color: '#174189', fontSize: 17 }}>{label}</div>
         <div style={{ color: COLOR_CREATED, fontWeight: 600, marginBottom: 4 }}>
-          ● Tickets Created: <b>{payload[1]?.value}</b>
+          ● Tickets Closed : <b>{payload[1]?.value}</b>
         </div>
         <div style={{ color: COLOR_CLOSED, fontWeight: 600 }}>
-          ● Tickets Closed: <b>{payload[0]?.value}</b>
+          ● Tickets Created : <b>{payload[0]?.value}</b>
         </div>
       </div>
     );
@@ -85,47 +85,45 @@ function CustomBarChart() {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 18, height: 18, background: COLOR_CREATED, borderRadius: 4 }} />
           <div>
-            <div style={{ fontWeight: 600, fontSize: 15, color: "#174189" }}>Tickets Created</div>
+            <div style={{ fontWeight: 600, fontSize: 15, color: "#174189" }}>Tickets Closed</div>
             <div style={{ fontSize: 15, color: "#222", fontWeight: 400 }}>Avg: {avgCreated}</div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 18, height: 18, background: COLOR_CLOSED, borderRadius: 4 }} />
           <div>
-            <div style={{ fontWeight: 600, fontSize: 15, color: "#2176bd" }}>Tickets Closed</div>
+            <div style={{ fontWeight: 600, fontSize: 15, color: "#2176bd" }}>Tickets Created</div>
             <div style={{ fontSize: 15, color: "#222", fontWeight: 400 }}>Avg: {avgClosed}</div>
           </div>
         </div>
       </div>
       {/* BarChart */}
       <div style={{ flex: 1, minWidth: 0, paddingLeft: 10 }}>
-        <ResponsiveContainer width={600} height={260}>
-          <BarChart data={data} barGap={6} barCategoryGap={30}>
-            <XAxis dataKey="name" tick={{ fontSize: 13, fill: "#888" }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 13, fill: "#bbb" }} axisLine={false} tickLine={false} />
-            {/* Barres empilées, pas d'arrondi, pas de label, pas d'effet hover */}
-            <Bar
-              dataKey="created"
-              stackId="a"
-              fill={COLOR_CREATED}
-              radius={[0, 0, 0, 0]}
-              maxBarSize={50}
-              name="Tickets Created"
-              onMouseOver={undefined}
-              onMouseOut={undefined}
-              shape={props => <rect {...props} style={getBarStyle(props.index, 'created', COLOR_CREATED)} />} />
-            <Bar
-              dataKey="closed"
-              stackId="a"
-              fill={COLOR_CLOSED}
-              radius={[8, 8, 0, 0]}
-              maxBarSize={38}
-              name="Tickets Closed"
-              onMouseOver={undefined}
-              onMouseOut={undefined}
-              shape={props => <rect {...props} style={getBarStyle(props.index, 'closed', COLOR_CLOSED)} />} />
-          </BarChart>
-        </ResponsiveContainer>
+        <BarChart width={600} height={260} data={data} barGap={6} barCategoryGap={30}>
+          <XAxis dataKey="name" tick={{ fontSize: 13, fill: "#888" }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 13, fill: "#bbb" }} axisLine={false} tickLine={false} />
+          {/* Barres empilées, pas d'arrondi, pas de label, pas d'effet hover */}
+          <Bar
+            dataKey="created"
+            stackId="a"
+            fill={COLOR_CREATED}
+            radius={[0, 0, 0, 0]}
+            maxBarSize={50}
+            name="Tickets Closed"
+            onMouseOver={undefined}
+            onMouseOut={undefined}
+            shape={props => <rect {...props} style={getBarStyle(props.index, 'created', COLOR_CREATED)} />} />
+          <Bar
+            dataKey="closed"
+            stackId="a"
+            fill={COLOR_CLOSED}
+            radius={[8, 8, 0, 0]}
+            maxBarSize={38}
+            name="Tickets Created"
+            onMouseOver={undefined}
+            onMouseOut={undefined}
+            shape={props => <rect {...props} style={getBarStyle(props.index, 'closed', COLOR_CLOSED)} />} />
+        </BarChart>
       </div>
     </div>
   );

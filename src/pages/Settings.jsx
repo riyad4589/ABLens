@@ -49,7 +49,7 @@ export default function Settings() {
   return (
     <div className="dashboard-layout">
       <Sidebar />
-      <main className="dashboard-main" style={{ maxWidth: 1100, margin: '0 auto', paddingTop: 32, marginLeft: 240 }}>
+      <main className="dashboard-main">
         <h1 style={{ color: '#174189', fontWeight: 800, fontSize: 28, marginBottom: 24 }}>Paramètres</h1>
         <div style={{ display: 'flex', gap: 18, marginBottom: 18 }}>
           {TABS.map(t => (

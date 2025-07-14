@@ -59,7 +59,7 @@ export default function TicketDetail() {
   return (
     <div className="dashboard-layout" style={{ height: '100vh', overflow: 'hidden' }}>
       <Sidebar />
-      <main className="dashboard-main" style={{ minHeight: '100vh', height: '100vh', overflow: 'hidden', background: '#fff', padding: 32, display: 'flex', flexDirection: 'column' }}>
+      <main className="dashboard-main">
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
             <h1 style={{ fontSize: '1.6rem', fontWeight: 700, margin: 0 }}>Ticket N° {ticket.id}30</h1>
