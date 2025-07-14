@@ -74,7 +74,7 @@ export default function Login() {
         
         .login-left {
           flex: 1.2;
-          background: linear-gradient(135deg, #1e40af 0%, #3b82f6 25%, #60a5fa 50%, #93c5fd 75%, #dbeafe 100%);
+          background: #174189;
           position: relative;
           display: flex;
           flex-direction: column;
@@ -83,20 +83,6 @@ export default function Login() {
           padding: 2rem;
           overflow: hidden;
           height: 100vh;
-        }
-        
-        .login-left::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: 
-            radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(30,64,175,0.1) 0%, transparent 50%),
-            linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.05) 50%, transparent 70%);
-          animation: patternMove 15s ease-in-out infinite;
         }
         
         @keyframes patternMove {
@@ -244,7 +230,7 @@ export default function Login() {
         .login-title {
           font-size: 28px;
           font-weight: 700;
-          color: #1e40af;
+          color: #174189;
           margin-bottom: 0.5rem;
           letter-spacing: 0.5px;
         }

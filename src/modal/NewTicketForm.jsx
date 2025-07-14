@@ -3,7 +3,10 @@
 // Utilisé pour l'ajout de tickets dans l'application.
 import React, { useState } from "react";
 import "../dashboard.css";
+import "./NewTicketForm.css";
 import { MdSave, MdClose } from "react-icons/md";
+import { Select, TextInput, Textarea, SegmentedControl } from '@mantine/core';
+import '@mantine/core/styles.css';
 
 export default function NewTicketForm({ onClose }) {
   const [priority, setPriority] = useState("NORMAL");
@@ -26,72 +29,115 @@ export default function NewTicketForm({ onClose }) {
     <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="modal-content">
         <button className="modal-close-btn" onClick={onClose} title="Fermer">
-          <MdClose style={{ fontSize: '1.25em', display: 'block', margin: 'auto' }} />
+          <MdClose className="icon-close" />
         </button>
-        <h2 style={{ marginBottom: 18 }}>New Ticket Information :</h2>
+        <h2 className="modal-title">New Ticket Information :</h2>
         <form className="ticket-form">
           <div className="form-row">
-            <label>Customer<span className="required">*</span></label>
-            <input type="text" required />
+            <TextInput
+              label="Customer"
+              placeholder="Nom du client"
+              required
+              className="mantine-input"
+            />
           </div>
           <div className="form-row">
-            <label>Ticket Subject<span className="required">*</span></label>
-            <input type="text" required />
+            <TextInput
+              label="Ticket Subject"
+              placeholder="Sujet du ticket"
+              required
+              className="mantine-input"
+            />
           </div>
           <div className="form-row">
-            <label>Department<span className="required">*</span></label>
-            <select required><option>Support</option></select>
+            <Select
+              label="Department"
+              placeholder="Choisir un département"
+              data={['Support', 'Ventes', 'Technique']}
+              required
+              className="mantine-select"
+              clearable
+              checkIconPosition="right"
+            />
           </div>
           <div className="form-row">
-            <label>Motif<span className="required">*</span></label>
-            <select required><option>General</option></select>
+            <Select
+              label="Motif"
+              placeholder="Choisir un motif"
+              data={['General', 'Facturation', 'Technique']}
+              required
+              className="mantine-select"
+              clearable
+              checkIconPosition="right"
+            />
           </div>
           <div className="form-row priority-row">
             <label>Ticket Priority</label>
-            <div className="priority-group">
-              {priorities.map((p) => (
-                <button
-                  type="button"
-                  key={p.label}
-                  className={`priority-btn${priority === p.label ? " active" : ""}`}
-                  style={{ background: priority === p.label ? p.color : "#fff", color: priority === p.label ? "#fff" : p.color, borderColor: p.color }}
-                  onClick={() => setPriority(p.label)}
-                >
-                  {p.label === "HIGH" ? "✔ HIGH" : p.label}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              fullWidth
+              color="blue"
+              data={[
+                { label: 'LOW', value: 'LOW' },
+                { label: 'NORMAL', value: 'NORMAL' },
+                { label: 'HIGH', value: 'HIGH' },
+                { label: 'URGENT', value: 'URGENT' },
+              ]}
+              value={priority}
+              onChange={setPriority}
+              className="mantine-priority"
+            />
           </div>
           <div className="form-row">
-            <label>Order Number</label>
-            <input type="text" />
+            <TextInput
+              label="Order Number"
+              placeholder="Numéro de commande"
+              className="mantine-input"
+            />
           </div>
           <div className="form-row">
-            <label>Tags<span className="required">*</span></label>
-            <input type="text" placeholder="Tag, Tag, ..." required />
+            <TextInput
+              label="Tags"
+              placeholder="Tag, Tag, ..."
+              required
+              className="mantine-input"
+            />
           </div>
           <div className="form-row">
-            <label>Type<span className="required">*</span></label>
-            <select required value={type} onChange={e => setType(e.target.value)}>
-              <option>Internal</option>
-              <option>External</option>
-            </select>
+            <Select
+              label="Type"
+              placeholder="Choisir un type"
+              data={['Internal', 'External']}
+              value={type}
+              onChange={setType}
+              required
+              className="mantine-select"
+              clearable
+              checkIconPosition="right"
+            />
           </div>
           <div className="form-row">
-            <label>Source</label>
-            <select disabled={type === "Internal"}>
-              <option>Phone Call</option>
-              <option>Email</option>
-              <option>Whats App</option>
-            </select>
+            <Select
+              label="Source"
+              placeholder="Choisir une source"
+              data={['Phone Call', 'Email', 'Whats App']}
+              disabled={type === 'Internal'}
+              className="mantine-select"
+              clearable
+              checkIconPosition="right"
+            />
           </div>
           <div className="form-row">
-            <label>Claim<span className="required">*</span></label>
-            <textarea required rows={3} />
+            <Textarea
+              label="Claim"
+              placeholder="Décrivez la réclamation"
+              required
+              minRows={3}
+              className="mantine-input"
+            />
           </div>
           <div className="form-actions single-action">
             <button type="submit" className="save-btn">
-              <MdSave style={{ marginRight: 8, fontSize: '1.3em', verticalAlign: 'middle' }} />
+              <MdSave className="icon-save" />
               Enregistrer
             </button>
           </div>
