@@ -5,12 +5,13 @@ import React, { useState } from "react";
 import "../dashboard.css";
 import "./NewTicketForm.css";
 import { MdSave, MdClose } from "react-icons/md";
-import { Select, TextInput, Textarea, SegmentedControl } from '@mantine/core';
+import { Select, TextInput, Textarea, SegmentedControl, TagsInput } from '@mantine/core';
 import '@mantine/core/styles.css';
 
 export default function NewTicketForm({ onClose }) {
   const [priority, setPriority] = useState("NORMAL");
   const [type, setType] = useState("Internal");
+  const [tags, setTags] = useState([]);
   const priorities = [
     { label: "LOW", color: "#b0bed9" },
     { label: "NORMAL", color: "#2176bd" },
@@ -95,10 +96,12 @@ export default function NewTicketForm({ onClose }) {
             />
           </div>
           <div className="form-row">
-            <TextInput
+            <TagsInput
               label="Tags"
-              placeholder="Tag, Tag, ..."
+              placeholder="Appuyez sur Entrée pour ajouter un tag"
               required
+              value={tags}
+              onChange={setTags}
               className="mantine-input"
             />
           </div>

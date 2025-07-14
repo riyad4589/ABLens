@@ -4,43 +4,49 @@
 // TicketDetailModal.jsx
 import React from "react";
 import '../style/TicketDetailModal.css';
+import { Modal, Button, Badge, TextInput, Group, Title, TagsInput } from '@mantine/core';
 
 const priorityColors = {
-  LOW: "#b0bed9",
-  NORMAL: "#2176bd",
-  HIGH: "#f7b731",
-  URGENT: "#ff4d4f"
+  LOW: "blue",
+  NORMAL: "indigo",
+  HIGH: "yellow",
+  URGENT: "red"
 };
 
 export default function TicketDetailModal({ ticket, onClose }) {
   if (!ticket) return null;
 
   return (
-    <div className="modal-overlay" onClick={e => {
-      if (e.target.classList.contains('modal-overlay')) onClose();
-    }}>
-      <div className="modal-content">
-        <button className="modal-close-btn" onClick={onClose} title="Fermer">×</button>
-        <div className="modal-left">
-          <h2 className="modal-title">Ticket N° {ticket.id}</h2>
+    <Modal
+      opened={!!ticket}
+      onClose={onClose}
+      title={<Title order={3}>Ticket N° {ticket.id}</Title>}
+      size="xl"
+      overlayProps={{ opacity: 0.55, blur: 3 }}
+      centered
+    >
+      <Group align="flex-start" noWrap>
+        <div className="modal-left" style={{ flex: 1 }}>
+          <Group mb="md">
+            <Badge color={priorityColors[ticket.priority]} size="lg">
+              {ticket.priority}
+            </Badge>
+            <Badge color="gray" variant="light">Order: {ticket.orderNumber}</Badge>
+          </Group>
           <div className="ticket-info-group">
             <div>Created : <b>{ticket.created}</b> <span className="ticket-date">({ticket.date})</span></div>
-            <div>Order Number : <b>{ticket.orderNumber}</b></div>
-            <div>
-              Priority :
-              <span
-                className="priority-tag"
-                style={{ background: priorityColors[ticket.priority] }}
-              >
-                {ticket.priority}
-              </span>
-            </div>
             <div>Motif : <b>{ticket.motive}</b></div>
             <div>
               Tags :
-              {ticket.tags.map((tag, i) => (
-                <span key={i} className="ticket-tag">{tag}</span>
-              ))}
+              <TagsInput
+                value={ticket.tags}
+                disabled
+                readOnly
+                className="mantine-tagsinput"
+                label={null}
+                placeholder=""
+                style={{ marginLeft: 6, marginTop: 4, maxWidth: 320 }}
+              />
             </div>
             <div>Team : <b>{ticket.team}</b></div>
           </div>
@@ -54,11 +60,11 @@ export default function TicketDetailModal({ ticket, onClose }) {
           </div>
 
           <div className="comment-section">
-            <input type="text" placeholder="Type a comment" className="comment-input" />
+            <TextInput placeholder="Type a comment" className="comment-input" />
           </div>
         </div>
 
-        <div className="modal-right">
+        <div className="modal-right" style={{ flex: 1 }}>
           <div className="timeline-block">
             <div className="timeline-title">
               <span className="timeline-icon">🛈</span>
@@ -76,9 +82,11 @@ export default function TicketDetailModal({ ticket, onClose }) {
             <div><b>Address:</b> {ticket.client.address}</div>
           </div>
         </div>
-
-        <button className="close-ticket-btn">Close Ticket</button>
-      </div>
-    </div>
+      </Group>
+      <Group mt="xl" position="right">
+        <Button variant="default" onClick={onClose}>Fermer</Button>
+        <Button color="red">Close Ticket</Button>
+      </Group>
+    </Modal>
   );
 }
