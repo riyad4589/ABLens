@@ -18,6 +18,7 @@ import {
   Box,
   Badge,
 } from '@mantine/core';
+import { showNotification } from '@mantine/notifications';
 
 const navItems = [
   { 
@@ -70,6 +71,17 @@ const navLinkRootStyles = {
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    showNotification({
+      title: 'Déconnexion',
+      message: 'Déconnexion réussie',
+      color: 'blue',
+      autoClose: 2500,
+      icon: <IconLogout size={18} />,
+    });
+    navigate('/');
+  };
 
   return (
     <Paper
@@ -198,7 +210,7 @@ export default function Sidebar() {
             transition: 'all 0.2s ease',
             border: '1px solid rgba(255,255,255,0.1)',
           }}
-          onClick={() => navigate('/')}
+          onClick={handleLogout}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
             e.currentTarget.style.transform = 'translateY(-1px)';

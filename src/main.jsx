@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import { MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
 import '@mantine/core/styles.css';
 import 'mantine-datatable/styles.layer.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
@@ -18,6 +19,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <MantineProvider defaultColorScheme="auto">
+      <Notifications />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Login />} />

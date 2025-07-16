@@ -31,20 +31,20 @@ const useStyles = createStyles(() => ({
     width: '100%',
   },
   thead: {
-    background: '#f3f7fb',
+    background: 'linear-gradient(90deg, #194898 0%, #4fc3f7 100%)',
     position: 'sticky',
     top: 0,
     zIndex: 2,
     boxShadow: 'none',
     '& th': {
-      color: '#194898',
-      fontWeight: 700,
+      color: '#fff',
+      fontWeight: 800,
       fontSize: 16,
       border: 'none',
-      padding: '12px 14px',
+      padding: '14px 18px',
       whiteSpace: 'nowrap',
-      background: '#f3f7fb',
-      letterSpacing: 0.1,
+      background: 'transparent',
+      letterSpacing: 0.2,
       cursor: 'pointer',
       transition: 'background 0.18s',
       userSelect: 'none',
@@ -59,31 +59,31 @@ const useStyles = createStyles(() => ({
       borderTopRightRadius: 18,
     },
     '& th:hover': {
-      background: '#eaf2fa',
+      background: '#174189',
     },
   },
   cell: {
     fontWeight: 400,
     fontSize: 15,
-    color: '#222',
+    color: '#183153',
     background: '#fff',
     borderBottom: '1px solid #e3e6ea',
     borderRight: '1px solid #e3e6ea',
     whiteSpace: 'nowrap',
-    padding: '10px 14px',
+    padding: '13px 18px',
     transition: 'background 0.18s',
     textAlign: 'left',
   },
   row: {
     transition: 'background 0.18s',
     '&:hover': {
-      backgroundColor: '#f6faff',
+      backgroundColor: '#eaf2fa',
     },
     '&:nth-of-type(even)': {
-      background: '#fff',
+      background: '#f7f9fb',
     },
     '&:nth-of-type(odd)': {
-      background: '#f7f9fb',
+      background: '#fff',
     },
     '& td:last-child': {
       borderRight: 'none',
@@ -232,7 +232,7 @@ export default function Ticket() {
             Nouveau Ticket
           </Button>
         </Group>
-          <div className={classes.wrapper} style={{ background: 'transparent', boxShadow: 'none', margin: 0, padding: 0 }}>
+          <div className={classes.wrapper} style={{ background: 'transparent', boxShadow: 'none', margin: 0, padding: 0, marginTop: 100 }}>
             <DataTable
               striped
               maxHeight={900}
