@@ -5,9 +5,8 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import NewTicketForm from "../modal/NewTicketForm";
-import "../dashboard.css";
 import { MdConfirmationNumber } from "react-icons/md";
-import { Container } from '@mantine/core';
+import { Container, Group, Button, Title, Card } from '@mantine/core';
 import { createStyles } from '@mantine/styles';
 import { Link } from "react-router-dom";
 import { tickets as ticketData } from "../data/mockTickets";
@@ -15,6 +14,7 @@ import { comparePriority, compareStatus } from "../utils/sortUtils";
 import { DataTable } from 'mantine-datatable';
 import { IconEye } from '@tabler/icons-react';
 import { ActionIcon } from '@mantine/core';
+// import classes from './Ticket.module.css';
 
 const PAGE_SIZE = 8;
 
@@ -37,7 +37,7 @@ const useStyles = createStyles(() => ({
     zIndex: 2,
     boxShadow: 'none',
     '& th': {
-      color: '#174189',
+      color: '#194898',
       fontWeight: 700,
       fontSize: 16,
       border: 'none',
@@ -207,17 +207,32 @@ export default function Ticket() {
   }, []);
 
   return (
-    <div className="dashboard-layout" style={{ height: '100vh', overflow: 'hidden' }}>
+    <div style={{ background: '#f7f9fb', minHeight: '100vh' }}>
       <Sidebar />
-      <main className="dashboard-main">
-        <div className="dashboard-header">
-          <h1>Tickets</h1>
-          <button className="new-ticket-btn" onClick={() => setShowNewTicket(true)}>
-            <MdConfirmationNumber className="ticket-icon" /> Nouveau Ticket
-          </button>
-        </div>
-        <Container size={1200} px={0}>
-          <div className={classes.wrapper}>
+      <main
+        style={{
+          marginLeft: 260,
+          padding: '32px 40px 32px 40px',
+          background: '#fff',
+          minHeight: '100vh',
+          borderRadius: '0 0 0 32px',
+          boxShadow: '0 2px 16px rgba(24,49,83,0.06)',
+        }}
+      >
+        <Group position="apart" align="center" mb={32} style={{ width: '100%', gap: 760 }}>
+          <Title order={2} style={{ margin: 0, fontWeight: 700, fontSize: 28 }}>Tickets</Title>
+          <Button
+            leftSection={<MdConfirmationNumber style={{ fontSize: 20 }} />}
+            size="md"
+            color="#194898"
+            radius="md"
+            style={{ fontWeight: 600, background: '#194898', color: '#fff' }}
+            onClick={() => setShowNewTicket(true)}
+          >
+            Nouveau Ticket
+          </Button>
+        </Group>
+          <div className={classes.wrapper} style={{ background: 'transparent', boxShadow: 'none', margin: 0, padding: 0 }}>
             <DataTable
               striped
               maxHeight={900}
@@ -236,7 +251,6 @@ export default function Ticket() {
               onSortStatusChange={setSortStatus}
             />
           </div>
-        </Container>
         {showNewTicket && <NewTicketForm onClose={() => setShowNewTicket(false)} />}
       </main>
     </div>

@@ -3,7 +3,6 @@
 // Utilisé pour afficher les détails d'un ticket depuis la liste ou le tableau de tickets.
 // TicketDetailModal.jsx
 import React from "react";
-import '../style/TicketDetailModal.css';
 import { Modal, Button, Badge, TextInput, Group, Title, TagsInput } from '@mantine/core';
 
 const priorityColors = {

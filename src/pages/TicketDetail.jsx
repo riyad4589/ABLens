@@ -3,24 +3,17 @@
 // Utilisé pour consulter et interagir avec un ticket spécifique.
 import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
-import "../dashboard.css";
 import { useParams, useNavigate } from "react-router-dom";
 import { MdClose } from "react-icons/md";
 import { FaStore, FaCity, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
-
-// Données mockées (à factoriser si besoin)
-const tickets = [
-  { id: 1, subject: "Problème de connexion", customer: "Jean Dupont", status: "Ouvert", priority: "HIGH", date: "2024-06-01", created: "2 Hours ago", orderNumber: "N/A", motive: "RETARD DE LIVRAISON", tags: ["Tag", "Tag", "Tag"], team: "LOGISTICS", claim: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et . consectetur adipiscing elit, sed", client: { name: "Skyonode", city: "Palayan City", phone: "212-171-876-636", address: "844 Morris Park avenue" }, timeline: [{ text: "Ticket Created", detail: "Agent : Sara Doe created ticket for Client John doe", time: "2 hours ago" }] },
-  { id: 2, subject: "Erreur de paiement", customer: "Sophie Martin", status: "Fermé", priority: "NORMAL", date: "2024-06-02", created: "1 day ago", orderNumber: "N/A", motive: "PAIEMENT", tags: ["Tag", "Tag"], team: "SUPPORT", claim: "Problème de paiement sur la commande #1234.", client: { name: "Shopcity", city: "Paris", phone: "01 23 45 67 89", address: "12 rue de Paris" }, timeline: [{ text: "Ticket Closed", detail: "Agent : Paul a fermé le ticket", time: "10 hours ago" }] },
-  { id: 3, subject: "Demande d'information", customer: "Ali Ben", status: "En attente", priority: "LOW", date: "2024-06-03", created: "3 days ago", orderNumber: "N/A", motive: "INFO", tags: ["Tag"], team: "SUPPORT", claim: "Demande d'information sur le produit.", client: { name: "InfoStore", city: "Lyon", phone: "04 56 78 90 12", address: "34 avenue des Infos" }, timeline: [{ text: "Ticket Created", detail: "Agent : Alice a créé le ticket", time: "3 days ago" }] },
-  { id: 4, subject: "Bug application", customer: "Fatima Zahra", status: "Ouvert", priority: "URGENT", date: "2024-06-04", created: "1 hour ago", orderNumber: "N/A", motive: "BUG", tags: ["Tag", "Urgent"], team: "DEV", claim: "Bug critique sur l'application mobile.", client: { name: "AppCorp", city: "Marseille", phone: "06 12 34 56 78", address: "56 rue du Code" }, timeline: [{ text: "Ticket Created", detail: "Agent : Karim a créé le ticket", time: "1 hour ago" }] },
-];
+import { TextInput, Button, Badge, Group } from '@mantine/core';
+import { tickets } from '../data/mockTickets';
 
 const priorityColors = {
-  LOW: "#b0bed9",
-  NORMAL: "#2176bd",
-  HIGH: "#f7b731",
-  URGENT: "#ff4d4f"
+  LOW: 'blue',
+  NORMAL: 'indigo',
+  HIGH: 'yellow',
+  URGENT: 'red',
 };
 
 export default function TicketDetail() {
@@ -32,9 +25,9 @@ export default function TicketDetail() {
   const [isClosed, setIsClosed] = useState(ticket.status === 'Fermé');
 
   if (!ticket) return (
-    <div className="dashboard-layout">
+    <div style={{ background: '#f7f9fb', minHeight: '100vh' }}>
       <Sidebar />
-      <main className="dashboard-main" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+      <main style={{ marginLeft: 240, padding: '32px 40px', background: '#fff', minHeight: '100vh', borderRadius: '0 0 0 32px', boxShadow: '0 2px 16px rgba(24,49,83,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div>Ticket introuvable</div>
       </main>
     </div>
@@ -57,12 +50,12 @@ export default function TicketDetail() {
   const getSender = (idx) => idx % 2 === 0 ? { name: 'Vous', avatar: 'https://ui-avatars.com/api/?name=Vous&background=2176bd&color=fff' } : { name: 'Agent', avatar: 'https://ui-avatars.com/api/?name=Agent&background=b0bed9&color=fff' };
 
   return (
-    <div className="dashboard-layout" style={{ height: '100vh', overflow: 'hidden' }}>
+    <div style={{ background: '#f7f9fb', minHeight: '100vh' }}>
       <Sidebar />
-      <main className="dashboard-main">
+      <main style={{ marginLeft: 260, padding: '32px 40px', background: '#fff', minHeight: '100vh', borderRadius: '0 0 0 32px', boxShadow: '0 2px 16px rgba(24,49,83,0.06)' }}>
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
-            <h1 style={{ fontSize: '1.6rem', fontWeight: 700, margin: 0 }}>Ticket N° {ticket.id}30</h1>
+            <h1 style={{ fontSize: '1.6rem', fontWeight: 700, margin: 0 }}>Ticket N° {ticket.id}</h1>
             <div style={{ display: 'flex', gap: 12 }}>
               <button
                 style={{ background: '#ff4d4f', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 17, display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 2px 8px rgba(24,49,83,0.08)', cursor: 'pointer' }}
@@ -79,9 +72,9 @@ export default function TicketDetail() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginBottom: 10 }}>
                 <div>Created : <b>{ticket.created}</b> <span style={{ color: '#888', fontSize: 13, fontWeight: 400 }}>20/04/2024 09:50</span></div>
                 <div>Order Number : <b>{ticket.orderNumber}</b></div>
-                <div>Priority : <span style={{ background: priorityColors[ticket.priority], color: '#fff', borderRadius: 6, padding: '2px 12px', fontWeight: 600, fontSize: 15, letterSpacing: 1 }}>{ticket.priority}</span></div>
+                <div>Priority : <Badge color={priorityColors[ticket.priority]}>{ticket.priority}</Badge></div>
                 <div>Motive : <b>{ticket.motive}</b></div>
-                <div>Tags: {ticket.tags.map((tag, i) => <span key={i} style={{ background: '#e0e6ed', color: '#174189', borderRadius: 6, padding: '2px 8px', fontWeight: 500, fontSize: 14, marginRight: 6, display: 'inline-block', marginBottom: 2 }}>{tag}</span>)}</div>
+                <div>Tags: {ticket.tags.map((tag, i) => <Badge key={i} color="gray" variant="light" mr={6}>{tag}</Badge>)}</div>
                 <div>Team : <b>{ticket.team}</b></div>
               </div>
               <div style={{ margin: '24px 0 32px 0', maxWidth: 600 }}>
@@ -156,17 +149,16 @@ export default function TicketDetail() {
             width: '100%',
           }}
         >
-          <input
-            type="text"
+          <TextInput
             placeholder="type a comment"
             value={input}
             onChange={e => setInput(e.target.value)}
-            style={{ flex: 1, border: '1.5px solid #e0e6ed', borderRadius: 6, padding: 10, fontSize: 15 }}
+            style={{ flex: 1 }}
           />
-          <button type="submit" style={{ background: '#2176bd', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 18px', fontWeight: 600, fontSize: 17, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Button type="submit" color="blue" style={{ fontWeight: 600, fontSize: 17, display: 'flex', alignItems: 'center', gap: 6 }}>
             Envoyer
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path fill="#fff" d="M2 21l21-9-21-9v7l15 2-15 2v7z"/></svg>
-          </button>
+          </Button>
         </form>
       </main>
     </div>

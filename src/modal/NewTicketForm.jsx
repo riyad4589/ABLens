@@ -2,8 +2,6 @@
 // Il affiche un formulaire dans une modale pour créer un nouveau ticket avec gestion des champs, priorités et validation.
 // Utilisé pour l'ajout de tickets dans l'application.
 import React, { useState } from "react";
-import "../dashboard.css";
-import "./NewTicketForm.css";
 import { MdSave, MdClose } from "react-icons/md";
 import { Select, TextInput, Textarea, SegmentedControl, TagsInput, Modal, Button, Group, Title } from '@mantine/core';
 import '@mantine/core/styles.css';

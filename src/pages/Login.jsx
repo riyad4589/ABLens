@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { MdPerson, MdLock, MdVisibility, MdVisibilityOff, MdBusiness, MdSecurity } from "react-icons/md";
 import ablensLogo from "../assets/ablens2.jpg";
 import { useNavigate } from "react-router-dom";
-
+import { TextInput, PasswordInput, Button, Group, Loader, Stack, Paper, Center } from '@mantine/core';
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -12,27 +12,22 @@ export default function Login() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const navigate = useNavigate();
 
-
   useEffect(() => {
     document.title = "ABLENS - Connexion";
-    
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-    
     return () => clearInterval(timer);
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
-  
     setTimeout(() => {
       setLoading(false);
       navigate("/dashboard");
     }, 1800);
   };
-  
 
   const formatTime = (date) => {
     return date.toLocaleTimeString('fr-FR', { 
@@ -329,7 +324,7 @@ export default function Login() {
         
         .password-toggle:hover {
           background: #f3f4f6;
-          color: #3b82f6;
+          color: #174189;
         }
         
         .login-btn {
@@ -512,60 +507,58 @@ export default function Login() {
       </div>
       
       <div className="login-right">
-        <div className="login-form">
-          <div className="login-header">
-            <h2 className="login-title">Connexion</h2>
-            <p className="login-subtitle">Accédez à votre espace professionnel</p>
-          </div>
-          
-          <div className="login-field">
-            <label htmlFor="username">Nom d'utilisateur</label>
-            <div className="input-container">
-              <input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Entrez votre nom d'utilisateur"
-                required
-              />
-              <MdPerson className="input-icon" />
+        <Center style={{ width: '100%', minHeight: '100vh' }}>
+          <Paper shadow="md" radius={20} p={36} style={{ width: 380, maxWidth: '100%' }}>
+            <div className="login-header">
+              <h2 className="login-title">Connexion</h2>
+              <p className="login-subtitle">Accédez à votre espace professionnel</p>
             </div>
-          </div>
-          
-          <div className="login-field">
-            <label htmlFor="password">Mot de passe</label>
-            <div className="input-container">
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Entrez votre mot de passe"
-                required
-              />
-              <MdLock className="input-icon" />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-              >
-                {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
-              </button>
-            </div>
-          </div>
-          
-          <button 
-            className="login-btn" 
-            type="button" 
-            onClick={handleSubmit}
-            disabled={loading}
-          >
-            {loading && <div className="loading-spinner"></div>}
-            {loading ? "Connexion en cours..." : "Se connecter"}
-          </button>
-        </div>
+            <form onSubmit={handleSubmit}>
+              <Stack spacing={24}>
+                <TextInput
+                  label="Nom d'utilisateur"
+                  placeholder="Entrez votre nom d'utilisateur"
+                  icon={<MdPerson />}
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
+                  required
+                  autoFocus
+                  size="md"
+                />
+                <PasswordInput
+                  label="Mot de passe"
+                  placeholder="Entrez votre mot de passe"
+                  icon={<MdLock />}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  visible={showPassword}
+                  onVisibilityChange={setShowPassword}
+                  rightSection={
+                    <Button
+                      variant="subtle"
+                      size="xs"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
+                    </Button>
+                  }
+                  size="md"
+                />
+                <Button
+                  type="submit"
+                  loading={loading}
+                  fullWidth
+                  size="md"
+                  style={{ marginTop: 8, fontWeight: 600, fontSize: 18 }}
+                >
+                  {loading ? "Connexion en cours..." : "Se connecter"}
+                </Button>
+              </Stack>
+            </form>
+          </Paper>
+        </Center>
       </div>
     </div>
   );
