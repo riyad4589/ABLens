@@ -1,6 +1,7 @@
 // Ce fichier est le point d'entrée principal de l'application React.
 // Il configure le routing, le provider Mantine, et monte les différentes pages (Login, Dashboard, Tickets, etc.).
 // Utilisé pour initialiser et organiser la navigation de l'application.
+
 import { StrictMode, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
