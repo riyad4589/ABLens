@@ -103,22 +103,27 @@ export default function Sidebar() {
       }}
     >
       {/* Header avec Logo */}
-      <Box style={{ 
+      <Box 
+      style={{ 
         textAlign: 'center', 
         padding: '25px 0 20px 0',
-        borderBottom: '1px solid rgba(255,255,255,0.1)'
-      }}>
-        <Image 
-          src={logo} 
-          alt="Logo" 
-          width={140} 
-          mx="auto"
-          style={{
-            filter: 'brightness(1.1)',
-            transition: 'transform 0.3s ease',
-          }}
-        />
-      </Box>
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        cursor: 'pointer'
+      }}
+      onClick={() => navigate('/dashboard')}
+    >
+      <Image 
+        src={logo} 
+        alt="Logo" 
+        width={140} 
+        mx="auto"
+        style={{
+          filter: 'brightness(1.1)',
+          transition: 'transform 0.3s ease',
+        }}
+      />
+    </Box>
+
 
 
       {/* Navigation principale */}

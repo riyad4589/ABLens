@@ -79,12 +79,6 @@ const useStyles = createStyles(() => ({
     '&:hover': {
       backgroundColor: '#eaf2fa',
     },
-    '&:nth-of-type(even)': {
-      background: '#f7f9fb',
-    },
-    '&:nth-of-type(odd)': {
-      background: '#fff',
-    },
     '& td:last-child': {
       borderRight: 'none',
       textAlign: 'right',
@@ -95,6 +89,7 @@ const useStyles = createStyles(() => ({
     },
   },
 }));
+
 
 export default function Ticket() {
   const [showNewTicket, setShowNewTicket] = useState(false);
@@ -193,6 +188,7 @@ export default function Ticket() {
             onMouseOut={e => {
               e.currentTarget.style.background = '#eaf2fa';
               e.currentTarget.style.color = '#2176bd';
+              //changer currentTarget
             }}
           >
             <IconEye size={22} />
@@ -208,6 +204,12 @@ export default function Ticket() {
 
   return (
     <div style={{ background: '#f7f9fb', minHeight: '100vh' }}>
+      <style>{`
+        .mantine-DataTable-row:hover {
+          background-color: #eaf2fa !important;
+          transition: background 0.18s;
+        }
+      `}</style>
       <Sidebar />
       <main
         style={{
@@ -249,6 +251,11 @@ export default function Ticket() {
               recordsPerPage={PAGE_SIZE}
               sortStatus={sortStatus}
               onSortStatusChange={setSortStatus}
+              classNames={{
+                thead: classes.thead,
+                row: classes.row,
+                cell: classes.cell,
+              }}
             />
           </div>
         {showNewTicket && <NewTicketForm onClose={() => setShowNewTicket(false)} />}

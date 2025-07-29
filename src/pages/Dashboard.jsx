@@ -16,10 +16,6 @@ export default function Dashboard() {
   }, []);
   const [showNewTicket, setShowNewTicket] = useState(false);
 
-  const handleNewTicketClose = () => {
-    setShowNewTicket(false);
-  };
-
   return (
     <div style={{ background: '#f7f9fb', minHeight: '100vh' }}>
       <Sidebar />
@@ -59,7 +55,7 @@ export default function Dashboard() {
             <DonutChart />
           </Card>
         </Container>
-        {showNewTicket && <NewTicketForm onClose={handleNewTicketClose} />}
+        {showNewTicket && <NewTicketForm onClose={() => setShowNewTicket(false)} />}
       </main>
     </div>
   );

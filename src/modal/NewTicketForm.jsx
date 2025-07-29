@@ -8,7 +8,7 @@ import '@mantine/core/styles.css';
 
 export default function NewTicketForm({ onClose }) {
   const [priority, setPriority] = useState("NORMAL");
-  const [type, setType] = useState("Internal");
+  const [type, setType] = useState("");
   const [tags, setTags] = useState([]);
   const priorities = [
     { label: "LOW", color: "#b0bed9" },
@@ -107,7 +107,7 @@ export default function NewTicketForm({ onClose }) {
             label="Source"
             placeholder="Choisir une source"
             data={['Phone Call', 'Email', 'Whats App']}
-            disabled={type === 'Internal'}
+            disabled={!type || type === 'Internal'}
             className="mantine-select"
             clearable
             checkIconPosition="right"
