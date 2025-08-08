@@ -1,20 +1,20 @@
-// // Ce fichier définit la page Ticket de l'application.
-// // Il affiche la liste des tickets dans un tableau avec tri, création, et affichage détaillé.
-// // Utilisé pour la gestion et le suivi des tickets par les utilisateurs.
+// Ce fichier définit la page Ticket de l'application.
+// Il affiche la liste des tickets dans un tableau avec tri, création, et affichage détaillé.
+// Utilisé pour la gestion et le suivi des tickets par les utilisateurs.
 
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import NewTicketForm from "../modal/NewTicketForm";
 import { MdConfirmationNumber } from "react-icons/md";
-import { Container, Group, Button, Title, Card } from '@mantine/core';
+import { Container, Group, Button, Title, Card, Center, Alert, Text } from '@mantine/core';
 import { createStyles } from '@mantine/styles';
 import { Link } from "react-router-dom";
-import { tickets as ticketData } from "../data/mockTickets";
 import { comparePriority, compareStatus } from "../utils/sortUtils";
 import { DataTable } from 'mantine-datatable';
-import { IconEye } from '@tabler/icons-react';
+import { IconEye, IconAlertCircle, IconLock } from '@tabler/icons-react';
 import { ActionIcon } from '@mantine/core';
-// import classes from './Ticket.module.css';
+import { useTickets } from '../hooks/useTickets';
+import { showNotification } from '@mantine/notifications';
 
 const PAGE_SIZE = 8;
 
@@ -90,34 +90,118 @@ const useStyles = createStyles(() => ({
   },
 }));
 
-
 export default function Ticket() {
   const [showNewTicket, setShowNewTicket] = useState(false);
   const [page, setPage] = useState(1);
   const [sortStatus, setSortStatus] = useState({ columnAccessor: 'id', direction: 'asc' });
   const { classes } = useStyles();
+  
+  // Utiliser le hook useTickets pour récupérer les données depuis l'API
+  const { tickets, loading, error, fetchTickets, createTicket, closeTicket } = useTickets();
 
-  const sortedTickets = [...ticketData].sort((a, b) => {
+  // Fonction pour fermer un ticket
+  const handleCloseTicket = async (ticketId, ticketSubject) => {
+    if (window.confirm(`Êtes-vous sûr de vouloir fermer le ticket "${ticketSubject}" ?`)) {
+      try {
+        await closeTicket(ticketId);
+        showNotification({
+          title: 'Ticket fermé',
+          message: `Le ticket "${ticketSubject}" a été fermé avec succès`,
+          color: 'green',
+          autoClose: 3000,
+        });
+      } catch (error) {
+        showNotification({
+          title: 'Erreur',
+          message: `Erreur lors de la fermeture: ${error.message}`,
+          color: 'red',
+          autoClose: 5000,
+        });
+      }
+    }
+  };
+
+  // Fonction pour créer un nouveau ticket
+  const handleCreateTicket = async (ticketData) => {
+    try {
+      await createTicket(ticketData);
+      setShowNewTicket(false);
+      showNotification({
+        title: 'Succès',
+        message: 'Ticket créé avec succès',
+        color: 'green',
+        autoClose: 3000,
+      });
+    } catch (error) {
+      showNotification({
+        title: 'Erreur',
+        message: `Erreur lors de la création: ${error.message}`,
+        color: 'red',
+        autoClose: 5000,
+      });
+    }
+  };
+
+  // Trier les tickets
+  const sortedTickets = [...tickets].sort((a, b) => {
     const dir = sortStatus.direction === 'asc' ? 1 : -1;
+    
+    // Gestion spéciale pour les propriétés imbriquées
+    if (sortStatus.columnAccessor === 'createdBy') {
+      const aVal = a.createdBy?.username || '';
+      const bVal = b.createdBy?.username || '';
+      if (aVal > bVal) return dir;
+      if (aVal < bVal) return -dir;
+      return 0;
+    }
+    
+    if (sortStatus.columnAccessor === 'assignedDepartment') {
+      const aVal = a.assignedDepartment?.name || '';
+      const bVal = b.assignedDepartment?.name || '';
+      if (aVal > bVal) return dir;
+      if (aVal < bVal) return -dir;
+      return 0;
+    }
+    
     if (sortStatus.columnAccessor === 'priority') return comparePriority(a, b, sortStatus.direction === 'asc');
     if (sortStatus.columnAccessor === 'status') return compareStatus(a, b, sortStatus.direction === 'asc');
-    if (a[sortStatus.columnAccessor] > b[sortStatus.columnAccessor]) return dir;
-    if (a[sortStatus.columnAccessor] < b[sortStatus.columnAccessor]) return -dir;
+    
+    // Tri standard pour les autres propriétés
+    const aVal = a[sortStatus.columnAccessor];
+    const bVal = b[sortStatus.columnAccessor];
+    
+    if (aVal === null || aVal === undefined) return 1;
+    if (bVal === null || bVal === undefined) return -1;
+    
+    if (aVal > bVal) return dir;
+    if (aVal < bVal) return -dir;
     return 0;
   });
+  
   const total = sortedTickets.length;
   const records = sortedTickets.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const columns = [
     { accessor: 'id', title: 'ID', sortable: true, width: 50, textAlign: 'center' },
     { accessor: 'subject', title: 'Sujet', sortable: true, width: 180 },
-    { accessor: 'customer', title: 'Client', sortable: true, width: 140 },
-    { accessor: 'status', title: 'Statut', sortable: true, width: 110,
+    { 
+      accessor: 'createdBy', 
+      title: 'Créé par', 
+      sortable: true, 
+      width: 140,
+      render: (ticket) => ticket.createdBy?.username || 'N/A'
+    },
+    { 
+      accessor: 'status', 
+      title: 'Statut', 
+      sortable: true, 
+      width: 110,
       render: (ticket) => {
         let color = '#b0bed9', bg = '#f4f6fb', label = ticket.status;
-        if (ticket.status === 'Ouvert') { color = '#1ecb7b'; bg = '#eafaf3'; }
-        else if (ticket.status === 'Fermé') { color = '#b0bed9'; bg = '#f4f6fb'; }
-        else if (ticket.status === 'En attente') { color = '#f7b731'; bg = '#fffbe6'; }
+        if (ticket.status === 'OPEN') { color = '#1ecb7b'; bg = '#eafaf3'; label = 'Ouvert'; }
+        else if (ticket.status === 'CLOSED') { color = '#b0bed9'; bg = '#f4f6fb'; label = 'Fermé'; }
+        else if (ticket.status === 'ASSIGNED') { color = '#f7b731'; bg = '#fffbe6'; label = 'Assigné'; }
+        else if (ticket.status === 'PENDING') { color = '#f7b731'; bg = '#fffbe6'; label = 'En attente'; }
         return (
           <span style={{
             background: bg,
@@ -134,7 +218,11 @@ export default function Ticket() {
         );
       }
     },
-    { accessor: 'priority', title: 'Priorité', sortable: true, width: 110,
+    { 
+      accessor: 'priority', 
+      title: 'Priorité', 
+      sortable: true, 
+      width: 110,
       render: (ticket) => {
         let color = '#2176bd', bg = '#eaf2fa', label = ticket.priority;
         if (ticket.priority === 'HIGH') { color = '#b8860b'; bg = '#fffbe6'; }
@@ -157,43 +245,97 @@ export default function Ticket() {
         );
       }
     },
-    { accessor: 'date', title: 'Date', sortable: true, width: 120 },
+    { 
+      accessor: 'createdAt', 
+      title: 'Date de création', 
+      sortable: true, 
+      width: 140,
+      render: (ticket) => {
+        if (!ticket.createdAt) return 'N/A';
+        const date = new Date(ticket.createdAt);
+        return date.toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+    },
+    { 
+      accessor: 'assignedDepartment', 
+      title: 'Département', 
+      sortable: true, 
+      width: 120,
+      render: (ticket) => ticket.assignedDepartment?.name || 'N/A'
+    },
     {
       accessor: 'actions',
       title: '',
-      width: 70,
+      width: 120,
       render: (ticket) => (
-        <Link
-          to={`/tickets/${ticket.id}`}
-          title="Voir le ticket"
-          style={{ display: 'inline-block' }}
-          onClick={e => e.stopPropagation()}
-        >
+        <Group gap={8} justify="flex-end">
+          <Link
+            to={`/tickets/${ticket.id}`}
+            title="Voir le ticket"
+            style={{ display: 'inline-block' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <ActionIcon
+              size={32}
+              radius={50}
+              variant="filled"
+              color="#2176bd"
+              style={{
+                background: '#eaf2fa',
+                color: '#2176bd',
+                transition: 'background 0.18s, color 0.18s',
+                boxShadow: '0 1px 4px #2176bd11',
+                cursor: 'pointer',
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.background = '#2176bd';
+                e.currentTarget.style.color = '#fff';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.background = '#eaf2fa';
+                e.currentTarget.style.color = '#2176bd';
+              }}
+            >
+              <IconEye size={22} />
+            </ActionIcon>
+          </Link>
+          
           <ActionIcon
             size={32}
             radius={50}
             variant="filled"
-            color="#2176bd"
+            color="#f7b731"
+            title="Fermer le ticket"
             style={{
-              background: '#eaf2fa',
-              color: '#2176bd',
+              background: '#fffbe6',
+              color: '#f7b731',
               transition: 'background 0.18s, color 0.18s',
-              boxShadow: '0 1px 4px #2176bd11',
+              boxShadow: '0 1px 4px #f7b73111',
               cursor: 'pointer',
+              display: ticket.status === 'CLOSED' ? 'none' : 'inline-flex',
             }}
             onMouseOver={e => {
-              e.currentTarget.style.background = '#2176bd';
+              e.currentTarget.style.background = '#f7b731';
               e.currentTarget.style.color = '#fff';
             }}
             onMouseOut={e => {
-              e.currentTarget.style.background = '#eaf2fa';
-              e.currentTarget.style.color = '#2176bd';
-              //changer currentTarget
+              e.currentTarget.style.background = '#fffbe6';
+              e.currentTarget.style.color = '#f7b731';
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCloseTicket(ticket.id, ticket.subject);
             }}
           >
-            <IconEye size={22} />
+            <IconLock size={22} />
           </ActionIcon>
-        </Link>
+        </Group>
       ),
     },
   ];
@@ -201,6 +343,47 @@ export default function Ticket() {
   useEffect(() => {
     document.title = "ABLENS - Tickets";
   }, []);
+
+  // Afficher une erreur si problème
+  if (error) {
+    return (
+      <div style={{ background: '#f7f9fb', minHeight: '100vh' }}>
+        <Sidebar />
+        <main
+          style={{
+            marginLeft: 260,
+            padding: '32px 40px 32px 40px',
+            background: '#fff',
+            minHeight: '100vh',
+            borderRadius: '0 0 0 32px',
+            boxShadow: '0 2px 16px rgba(24,49,83,0.06)',
+          }}
+        >
+          <Alert
+            icon={<IconAlertCircle size={16} />}
+            title="Erreur de chargement"
+            color="red"
+            variant="light"
+            style={{ marginBottom: 20 }}
+          >
+            <Text size="sm" mb={10}>
+              Impossible de charger les tickets depuis le serveur.
+            </Text>
+            <Text size="sm" mb={10}>
+              Erreur: {error}
+            </Text>
+            <Button 
+              size="sm" 
+              onClick={fetchTickets}
+              style={{ background: '#194898' }}
+            >
+              Réessayer
+            </Button>
+          </Alert>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: '#f7f9fb', minHeight: '100vh' }}>
@@ -221,44 +404,57 @@ export default function Ticket() {
           boxShadow: '0 2px 16px rgba(24,49,83,0.06)',
         }}
       >
-        <Group position="apart" align="center" mb={32} style={{ width: '100%', gap: 760 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
           <Title order={2} style={{ margin: 0, fontWeight: 700, fontSize: 28 }}>Tickets</Title>
           <Button
             leftSection={<MdConfirmationNumber style={{ fontSize: 20 }} />}
             size="md"
             color="#194898"
             radius="md"
-            style={{ fontWeight: 600, background: '#194898', color: '#fff' }}
+            style={{ fontWeight: 600, background: '#194898' }}
             onClick={() => setShowNewTicket(true)}
           >
             Nouveau Ticket
           </Button>
-        </Group>
-          <div className={classes.wrapper} style={{ background: 'transparent', boxShadow: 'none', margin: 0, padding: 0, marginTop: 100 }}>
-            <DataTable
-              striped
-              maxHeight={900}
-              withTableBorder
-              highlightOnHover
-              borderRadius="md"
-              withColumnBorders
-              verticalAlign="middle"
-              columns={columns}
-              records={records}
-              page={page}
-              onPageChange={setPage}
-              totalRecords={total}
-              recordsPerPage={PAGE_SIZE}
-              sortStatus={sortStatus}
-              onSortStatusChange={setSortStatus}
-              classNames={{
-                thead: classes.thead,
-                row: classes.row,
-                cell: classes.cell,
-              }}
-            />
-          </div>
-        {showNewTicket && <NewTicketForm onClose={() => setShowNewTicket(false)} />}
+        </div>
+        
+        {/* Affichage du nombre de tickets */}
+        <Text size="sm" color="dimmed" mb={16}>
+          {total} ticket{total !== 1 ? 's' : ''} trouvé{total !== 1 ? 's' : ''}
+        </Text>
+        
+        <div className={classes.wrapper} style={{ background: 'transparent', boxShadow: 'none', margin: 0, padding: 0, marginTop: 20 }}>
+          <DataTable
+            striped
+            maxHeight={900}
+            withTableBorder
+            highlightOnHover
+            borderRadius="md"
+            withColumnBorders
+            verticalAlign="middle"
+            columns={columns}
+            records={records}
+            page={page}
+            onPageChange={setPage}
+            totalRecords={total}
+            recordsPerPage={PAGE_SIZE}
+            sortStatus={sortStatus}
+            onSortStatusChange={setSortStatus}
+            classNames={{
+              thead: classes.thead,
+              row: classes.row,
+              cell: classes.cell,
+            }}
+            noRecordsText="Aucun ticket trouvé"
+          />
+        </div>
+        
+        {showNewTicket && (
+          <NewTicketForm 
+            onClose={() => setShowNewTicket(false)} 
+            onTicketCreated={handleCreateTicket}
+          />
+        )}
       </main>
     </div>
   );

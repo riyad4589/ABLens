@@ -1,7 +1,7 @@
 // Ce fichier définit la page Settings de l'application.
 // Il affiche les paramètres (rôles, permissions, départements, utilisateurs) avec navigation par onglets.
 // Utilisé pour la gestion des paramètres administratifs de l'application.
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import {
   Tabs,
@@ -122,7 +122,8 @@ function SectionTable({ columns, emptyText }) {
 export default function Settings() {
   const [tab, setTab] = useState('roles');
 
-  useEffect(() => {
+  // Mise à jour du titre de la page selon l'onglet actif
+  React.useEffect(() => {
     document.title = TAB_TITLES[tab] || 'ABLENS - Settings';
   }, [tab]);
 
@@ -139,6 +140,7 @@ export default function Settings() {
           </ThemeIcon>
           <Title order={2} style={{ fontWeight: 700, fontSize: 28 }}>Paramètres</Title>
         </div>
+
         {/* Onglets avec icônes */}
         <Tabs value={tab} onChange={setTab} variant="outline">
           <Tabs.List>

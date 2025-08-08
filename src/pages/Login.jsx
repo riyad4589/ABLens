@@ -2,22 +2,49 @@ import React, { useState } from "react";
 import { MdPerson, MdLock, MdVisibility, MdVisibilityOff } from "react-icons/md";
 import ablensLogo from "../assets/ablens2.jpg";
 import { useNavigate } from "react-router-dom";
-import { TextInput, PasswordInput, Button, Stack, Paper, Center, Loader } from '@mantine/core';
+import { TextInput, PasswordInput, Button, Stack, Paper, Center, Alert } from '@mantine/core';
+import { useAuth } from "../hooks/useAuth";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigate("/dashboard");
-    }, 1200);
+    setError("");
+    
+    // Validation des champs
+    if (!username.trim()) {
+      setError("Le nom d'utilisateur est requis");
+      return;
+    }
+    
+    if (!password.trim()) {
+      setError("Le mot de passe est requis");
+      return;
+    }
+    
+    if (password.length < 3) {
+      setError("Le mot de passe doit contenir au moins 3 caractères");
+      return;
+    }
+
+    try {
+      const result = await login({ username: username.trim(), password });
+      
+      if (result.success) {
+        navigate("/dashboard");
+      } else {
+        setError(result.message || "Erreur de connexion");
+      }
+    } catch (error) {
+      console.error('Erreur de connexion:', error);
+      setError(error.message || "Erreur de connexion - Veuillez réessayer");
+    }
   };
 
   return (
@@ -34,25 +61,44 @@ export default function Login() {
             </div>
             <form onSubmit={handleSubmit}>
               <Stack spacing={24}>
+                {error && (
+                  <Alert 
+                    color="red" 
+                    title="Erreur de connexion"
+                    icon={<MdLock />}
+                    withCloseButton
+                    onClose={() => setError("")}
+                  >
+                    {error}
+                  </Alert>
+                )}
                 <TextInput
                   label="Nom d'utilisateur"
                   placeholder="Entrez votre nom d'utilisateur"
                   icon={<MdPerson />}
                   value={username}
-                  onChange={e => setUsername(e.target.value)}
+                  onChange={e => {
+                    setUsername(e.target.value);
+                    if (error) setError(""); // Effacer l'erreur quand l'utilisateur tape
+                  }}
                   required
                   autoFocus
                   size="md"
+                  error={!username.trim() && username.length > 0 ? "Le nom d'utilisateur est requis" : null}
                 />
                 <PasswordInput
                   label="Mot de passe"
                   placeholder="Entrez votre mot de passe"
                   icon={<MdLock />}
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={e => {
+                    setPassword(e.target.value);
+                    if (error) setError(""); // Effacer l'erreur quand l'utilisateur tape
+                  }}
                   required
                   visible={showPassword}
                   onVisibilityChange={setShowPassword}
+                  error={password.length > 0 && password.length < 3 ? "Le mot de passe doit contenir au moins 3 caractères" : null}
                   rightSection={
                     <Button
                       variant="subtle"
@@ -67,13 +113,11 @@ export default function Login() {
                 />
                 <Button
                   type="submit"
-                  loading={loading}
                   fullWidth
                   size="md"
                   style={{ marginTop: 8, fontWeight: 600, fontSize: 18, background: '#194898', color: '#fff' }}
-                  loaderProps={{ type: 'oval', color: '#fff' }}
                 >
-                  {loading ? "Connexion en cours..." : "Se connecter"}
+                  Se connecter
                 </Button>
               </Stack>
             </form>

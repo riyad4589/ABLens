@@ -19,74 +19,79 @@ import {
   Badge,
 } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
-
-const navItems = [
-  { 
-    to: '/dashboard', 
-    label: 'Dashboard', 
-    icon: IconLayoutDashboard,
-  },
-  { 
-    to: '/tickets', 
-    label: 'Tickets', 
-    icon: IconTicket,
-    // badge: 3 // Nombre de tickets en attente
-  },
-  { 
-    to: '/reports', 
-    label: 'Reports', 
-    icon: IconChartPie,
-  },
-  { 
-    to: '/settings', 
-    label: 'Settings', 
-    icon: IconSettings,
-  },
-];
-
-// Style actif des boutons (plus marqué)
-const navLinkActiveStyle = {
-  background: '#fff',
-  color: '#194898',
-  fontWeight: 700,
-  boxShadow: '0 2px 8px rgba(25,72,152,0.10)',
-  transform: 'scale(1.04)',
-  transition: 'all 0.18s cubic-bezier(.4,1.3,.6,1)',
-};
-
-// Style personnalisé pour le root du bouton au survol et focus
-const navLinkRootStyles = {
-  root: {
-    '&:hover': {
-      background: '#eaf1fb',
-      transform: 'translateX(8px) scale(1.06)',
-    },
-    '&:focus': {
-      outline: '2px solid #194898',
-      outlineOffset: 2,
-    },
-  },
-};
+import { useAuth } from '../hooks/useAuth';
 
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout, user } = useAuth();
+  
+  // Récupérer le rôle de l'utilisateur
+  const userRole = user?.role || 'AGENT';
+  const isAdmin = userRole === 'ADMIN';
 
-  const handleLogout = () => {
-    showNotification({
-      title: 'Déconnexion',
-      message: 'Déconnexion réussie',
-      color: 'blue',
-      autoClose: 2500,
-      icon: <IconLogout size={18} />,
-    });
-    navigate('/');
+  // Définir les éléments de navigation selon le rôle
+  const getNavItems = () => {
+    const baseItems = [
+      { 
+        to: '/dashboard', 
+        label: 'Dashboard', 
+        icon: IconLayoutDashboard,
+      },
+      { 
+        to: '/tickets', 
+        label: 'Tickets', 
+        icon: IconTicket,
+      },
+      { 
+        to: '/reports', 
+        label: 'Reports', 
+        icon: IconChartPie,
+      },
+    ];
+    
+    // Ajouter les éléments réservés aux admins
+    if (isAdmin) {
+      baseItems.push(
+        { 
+          to: '/settings', 
+          label: 'Settings', 
+          icon: IconSettings,
+        }
+      );
+    }
+    
+    return baseItems;
+  };
+
+  const navItems = getNavItems();
+
+  const handleLogout = async () => {
+    try {
+      // Appeler la fonction logout du hook useAuth
+      await logout();
+      
+      // Rediriger vers la page de login
+      navigate('/login');
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+      
+      // Afficher une notification d'erreur
+      showNotification({
+        title: 'Erreur',
+        message: 'Erreur lors de la déconnexion',
+        color: 'red',
+        autoClose: 3000,
+        icon: <IconLogout size={18} />,
+      });
+    }
   };
 
   return (
     <Paper
       withBorder={false}
       radius={0}
+      data-sidebar="true"
       style={{
         position: 'fixed',
         left: 0,
@@ -124,8 +129,6 @@ export default function Sidebar() {
       />
     </Box>
 
-
-
       {/* Navigation principale */}
       <Stack spacing={4} style={{ flex: 1, padding: '20px 15px' }}>
         
@@ -138,9 +141,17 @@ export default function Sidebar() {
               <NavLink
                 label={
                   <Group justify="space-between" style={{ width: '100%' }}>
-                    <Text size="sm" weight={isActive ? 600 : 500}>
-                      {item.label}
+                    <Text 
+                        size="sm" 
+                        weight={isActive ? 600 : 500} 
+                        style={{ 
+                          color: isActive ? '#14438b' : '#ffffff !important',
+                          fontWeight: isActive ? 600 : 500
+                        }}
+                      >
+                        {item.label}
                     </Text>
+
                     {item.badge && (
                       <Badge 
                         size="xs" 
@@ -160,7 +171,7 @@ export default function Sidebar() {
                     size={20} 
                     stroke={1.5}
                     style={{ 
-                      color: isActive ? '#14438b' : '#fff',
+                      color: isActive ? '#14438b' : '#ffffff !important',
                       transition: 'all 0.2s ease'
                     }} 
                   />
@@ -179,10 +190,11 @@ export default function Sidebar() {
                 styles={{
                   root: {
                     backgroundColor: isActive ? '#fff' : 'transparent',
-                    color: isActive ? '#14438b' : '#fff',
+                    color: isActive ? '#14438b' : '#ffffff !important',
                     '&:hover': {
                       backgroundColor: isActive ? '#fff' : 'rgba(255,255,255,0.1)',
                       transform: 'translateX(4px)',
+                      color: isActive ? '#14438b' : '#ffffff !important',
                     },
                     '&::before': {
                       content: '""',
@@ -230,10 +242,7 @@ export default function Sidebar() {
           </Text>
           <IconLogout 
             size={18} 
-            color="#fff" 
-            style={{ 
-              transition: 'transform 0.2s ease'
-            }} 
+            style={{ color: '#fff' }}
           />
         </Group>
       </Box>

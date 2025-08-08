@@ -37,6 +37,8 @@ export default function StatsCards() {
               justifyContent: 'center',
               transition: 'transform 0.18s cubic-bezier(.4,1,.7,1), box-shadow 0.18s',
               cursor: 'pointer',
+              backgroundColor: '#ffffff',
+              color: '#183153',
             }}
             onMouseEnter={e => {
               e.currentTarget.style.transform = 'scale(1.045)';

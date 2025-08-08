@@ -8,13 +8,25 @@ import { MdConfirmationNumber } from "react-icons/md";
 import CustomBarChart from "../components/BarChart";
 import DonutChart from "../components/DonutChart";
 import NewTicketForm from "../modal/NewTicketForm";
-import { Group, Button, Title, Card, Paper, Stack, Divider, Container } from '@mantine/core';
+import { Group, Button, Title, Card, Paper, Stack, Divider, Container, Alert, Text } from '@mantine/core';
+import { useAuth } from "../hooks/useAuth";
+import { IconInfoCircle } from '@tabler/icons-react';
 
 export default function Dashboard() {
   useEffect(() => {
     document.title = "ABLENS - Dashboard";
   }, []);
   const [showNewTicket, setShowNewTicket] = useState(false);
+  
+  // Récupérer les informations de l'utilisateur connecté
+  const { user } = useAuth();
+  const userRole = user?.role || 'AGENT'; // Par défaut AGENT si pas de rôle
+  
+  // Déterminer si l'utilisateur est admin
+  const isAdmin = userRole === 'ADMIN';
+  
+  // Déterminer si l'utilisateur est agent
+  const isAgent = userRole === 'AGENT';
 
   return (
     <div style={{ background: '#f7f9fb', minHeight: '100vh' }}>
@@ -29,8 +41,15 @@ export default function Dashboard() {
           boxShadow: '0 2px 16px rgba(24,49,83,0.06)',
         }}
       >
+        {/* En-tête avec titre et bouton conditionnel */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
-          <Title order={2} style={{ margin: 0, fontWeight: 700, fontSize: 28 }}>Dashboard</Title>
+          <div>
+            <Title order={2} style={{ margin: 0, fontWeight: 700, fontSize: 28 }}>Dashboard</Title>
+            <Text size="sm" color="dimmed" mt={4}>
+              Connecté en tant que : <strong>{userRole}</strong>
+            </Text>
+          </div>
+          {/* Bouton "Nouveau Ticket" - visible pour tous les rôles */}
           <Button
             leftSection={<MdConfirmationNumber style={{ fontSize: 20 }} />}
             size="md"
@@ -42,19 +61,34 @@ export default function Dashboard() {
             Nouveau Ticket
           </Button>
         </div>
+
+        {/* Section des statistiques - visible pour tous les rôles */}
         <StatsCards />
+        
+        {/* Séparateur - visible pour tous les rôles */}
         <Divider my={24} />
+        
+        {/* Graphique en barres - visible pour tous les rôles */}
         <Container size={650} px={0} style={{ marginTop: 24, marginLeft: 0, marginRight: 'auto' }}>
           <Card shadow="sm" radius="md" p="lg" withBorder>
             <CustomBarChart />
           </Card>
         </Container>
-        <Divider my={24} />
-        <Container size={650} px={0} style={{ marginTop: 24, marginLeft: 0, marginRight: 'auto' }}>
-          <Card shadow="sm" radius="md" p="lg" withBorder>
-            <DonutChart />
-          </Card>
-        </Container>
+
+        
+        {/* Graphique Donut - visible uniquement pour les ADMIN */}
+        {isAdmin && (
+          <>
+            <Divider my={24} />
+            <Container size={650} px={0} style={{ marginTop: 24, marginLeft: 0, marginRight: 'auto' }}>
+              <Card shadow="sm" radius="md" p="lg" withBorder>
+                <DonutChart />
+              </Card>
+            </Container>
+          </>
+        )}
+        
+        {/* Formulaire de nouveau ticket - visible pour tous les rôles */}
         {showNewTicket && <NewTicketForm onClose={() => setShowNewTicket(false)} />}
       </main>
     </div>
