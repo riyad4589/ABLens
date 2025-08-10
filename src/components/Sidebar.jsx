@@ -6,6 +6,7 @@ import {
   IconChartPie,
   IconSettings,
   IconLogout,
+  IconUser,
 } from '@tabler/icons-react';
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -74,8 +75,6 @@ export default function Sidebar() {
       // Rediriger vers la page de login
       navigate('/login');
     } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
-      
       // Afficher une notification d'erreur
       showNotification({
         title: 'Erreur',
@@ -127,6 +126,58 @@ export default function Sidebar() {
           transition: 'transform 0.3s ease',
         }}
       />
+      
+      {/* Affichage du rôle utilisateur */}
+      <Box 
+        style={{ 
+          marginTop: 12,
+          padding: '8px 12px',
+          background: 'rgba(255,255,255,0.1)',
+          borderRadius: '8px',
+          border: '1px solid rgba(255,255,255,0.2)',
+          marginLeft: '15px',
+          marginRight: '15px',
+          transition: 'all 0.3s ease',
+          cursor: 'default'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+          e.currentTarget.style.border = '1px solid rgba(255,255,255,0.3)';
+          e.currentTarget.style.transform = 'translateY(-1px)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+          e.currentTarget.style.border = '1px solid rgba(255,255,255,0.2)';
+          e.currentTarget.style.transform = 'translateY(0)';
+        }}
+      >
+        <Group justify="space-between" align="center">
+          <Group gap="xs">
+            <IconUser size={14} style={{ color: 'rgba(255,255,255,0.7)' }} />
+            <Text 
+              size="xs" 
+              style={{ 
+                color: 'rgba(255,255,255,0.9)', 
+                fontWeight: 500
+              }}
+            >
+              Connecté en tant que
+            </Text>
+          </Group>
+          <Badge 
+            size="xs"
+            style={{ 
+              background: userRole === 'ADMIN' ? '#10b981' : '#3b82f6',
+              color: '#fff',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}
+          >
+            {userRole}
+          </Badge>
+        </Group>
+      </Box>
     </Box>
 
       {/* Navigation principale */}

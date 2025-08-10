@@ -43,12 +43,7 @@ export default function Dashboard() {
       >
         {/* En-tête avec titre et bouton conditionnel */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
-          <div>
-            <Title order={2} style={{ margin: 0, fontWeight: 700, fontSize: 28 }}>Dashboard</Title>
-            <Text size="sm" color="dimmed" mt={4}>
-              Connecté en tant que : <strong>{userRole}</strong>
-            </Text>
-          </div>
+          <Title order={2} style={{ margin: 0, fontWeight: 700, fontSize: 28 }}>Dashboard</Title>
           {/* Bouton "Nouveau Ticket" - visible pour tous les rôles */}
           <Button
             leftSection={<MdConfirmationNumber style={{ fontSize: 20 }} />}

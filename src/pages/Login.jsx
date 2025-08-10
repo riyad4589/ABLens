@@ -42,7 +42,6 @@ export default function Login() {
         setError(result.message || "Erreur de connexion");
       }
     } catch (error) {
-      console.error('Erreur de connexion:', error);
       setError(error.message || "Erreur de connexion - Veuillez réessayer");
     }
   };

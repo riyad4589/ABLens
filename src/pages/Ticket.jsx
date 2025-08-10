@@ -6,12 +6,12 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import NewTicketForm from "../modal/NewTicketForm";
 import { MdConfirmationNumber } from "react-icons/md";
-import { Container, Group, Button, Title, Card, Center, Alert, Text } from '@mantine/core';
+import { Container, Group, Button, Title, Card, Center, Alert, Text, Stack } from '@mantine/core';
 import { createStyles } from '@mantine/styles';
 import { Link } from "react-router-dom";
 import { comparePriority, compareStatus } from "../utils/sortUtils";
 import { DataTable } from 'mantine-datatable';
-import { IconEye, IconAlertCircle, IconLock } from '@tabler/icons-react';
+import { IconEye, IconAlertCircle, IconLock, IconTicketOff, IconPlus } from '@tabler/icons-react';
 import { ActionIcon } from '@mantine/core';
 import { useTickets } from '../hooks/useTickets';
 import { showNotification } from '@mantine/notifications';
@@ -93,7 +93,7 @@ const useStyles = createStyles(() => ({
 export default function Ticket() {
   const [showNewTicket, setShowNewTicket] = useState(false);
   const [page, setPage] = useState(1);
-  const [sortStatus, setSortStatus] = useState({ columnAccessor: 'id', direction: 'asc' });
+  const [sortStatus, setSortStatus] = useState({ columnAccessor: 'subject', direction: 'asc' });
   const { classes } = useStyles();
   
   // Utiliser le hook useTickets pour récupérer les données depuis l'API
@@ -155,6 +155,14 @@ export default function Ticket() {
       return 0;
     }
     
+    if (sortStatus.columnAccessor === 'assignedAgent') {
+      const aVal = a.assignedAgent?.username || '';
+      const bVal = b.assignedAgent?.username || '';
+      if (aVal > bVal) return dir;
+      if (aVal < bVal) return -dir;
+      return 0;
+    }
+    
     if (sortStatus.columnAccessor === 'assignedDepartment') {
       const aVal = a.assignedDepartment?.name || '';
       const bVal = b.assignedDepartment?.name || '';
@@ -182,7 +190,6 @@ export default function Ticket() {
   const records = sortedTickets.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const columns = [
-    { accessor: 'id', title: 'ID', sortable: true, width: 50, textAlign: 'center' },
     { accessor: 'subject', title: 'Sujet', sortable: true, width: 180 },
     { 
       accessor: 'createdBy', 
@@ -190,6 +197,13 @@ export default function Ticket() {
       sortable: true, 
       width: 140,
       render: (ticket) => ticket.createdBy?.username || 'N/A'
+    },
+    { 
+      accessor: 'assignedAgent', 
+      title: 'Agent assigné', 
+      sortable: true, 
+      width: 140,
+      render: (ticket) => ticket.assignedAgent?.username || 'Non assigné'
     },
     { 
       accessor: 'status', 
@@ -417,11 +431,6 @@ export default function Ticket() {
             Nouveau Ticket
           </Button>
         </div>
-        
-        {/* Affichage du nombre de tickets */}
-        <Text size="sm" color="dimmed" mb={16}>
-          {total} ticket{total !== 1 ? 's' : ''} trouvé{total !== 1 ? 's' : ''}
-        </Text>
         
         <div className={classes.wrapper} style={{ background: 'transparent', boxShadow: 'none', margin: 0, padding: 0, marginTop: 20 }}>
           <DataTable

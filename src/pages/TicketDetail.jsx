@@ -39,7 +39,6 @@ export default function TicketDetail() {
         setIsClosed(ticketData.status === 'CLOSED');
       } catch (err) {
         setError(err.message);
-        console.error('Erreur lors du chargement du ticket:', err);
       }
     };
 

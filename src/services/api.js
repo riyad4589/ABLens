@@ -1,5 +1,9 @@
-// Service API pour communiquer avec le backend Spring Boot
+/**
+ * Service API pour communiquer avec le backend Spring Boot
+ * Gère toutes les requêtes HTTP vers l'API backend
+ */
 import { config } from '../config/config';
+import data from '../data/data.json';
 
 const API_BASE_URL = config.API_BASE_URL;
 
@@ -9,18 +13,22 @@ class ApiService {
     this.token = localStorage.getItem('accessToken');
   }
 
-  // Mettre à jour le token interne
+  /**
+   * Met à jour le token d'authentification depuis le localStorage
+   */
   updateToken() {
     this.token = localStorage.getItem('accessToken');
   }
 
-  // Configuration des headers avec token d'authentification
+  /**
+   * Génère les headers HTTP pour les requêtes authentifiées
+   * Inclut le token JWT si disponible
+   */
   getHeaders() {
     const headers = {
       'Content-Type': 'application/json',
     };
     
-    // Récupérer le token depuis localStorage à chaque appel
     const currentToken = localStorage.getItem('accessToken');
     if (currentToken) {
       headers['Authorization'] = `Bearer ${currentToken}`;
@@ -29,11 +37,14 @@ class ApiService {
     return headers;
   }
 
-  // Gestion des erreurs
+  /**
+   * Gère les réponses HTTP et les erreurs communes
+   * Redirige vers login si le token est expiré (401)
+   */
   handleResponse(response) {
     if (!response.ok) {
       if (response.status === 401) {
-        // Token expiré, rediriger vers login
+        // Token expiré - nettoyer le localStorage et rediriger
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('username');
@@ -46,7 +57,11 @@ class ApiService {
     return response.json();
   }
 
-  // Authentification
+  /**
+   * Authentifie un utilisateur avec le backend
+   * @param {Object} credentials - {username, password}
+   * @returns {Object} Réponse du serveur avec token JWT
+   */
   async login(credentials) {
     try {
       const response = await fetch(`${this.baseURL}/auth/login`, {
@@ -57,7 +72,6 @@ class ApiService {
         body: JSON.stringify(credentials),
       });
 
-      // Gestion spécifique des erreurs d'authentification
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error('Nom d\'utilisateur ou mot de passe incorrect');
@@ -66,28 +80,27 @@ class ApiService {
         } else if (response.status === 500) {
           throw new Error('Erreur serveur - Veuillez réessayer plus tard');
         } else if (response.status === 0 || response.status === 503) {
-          throw new Error('Impossible de se connecter au serveur - Vérifiez votre connexion');
+          throw new Error('Impossible de se connecter au serveur - Vérifiez que le backend Spring Boot est démarré sur http://localhost:8080');
         } else {
-          throw new Error(`Erreur de connexion (${response.status})`);
+          throw new Error(`Erreur de connexion (${response.status}) - Vérifiez que le backend est démarré`);
         }
       }
 
       const data = await response.json();
       
-      // Mettre à jour le token interne (le stockage localStorage est géré par useAuth)
       if (data.accessToken) {
         this.token = data.accessToken;
-        console.log('Token mis à jour:', this.token);
-        console.log('Rôle retourné par le backend:', data.role);
       }
       
       return data;
     } catch (error) {
-      console.error('Erreur de connexion:', error);
       throw error;
     }
   }
 
+  /**
+   * Déconnecte l'utilisateur en invalidant le token côté serveur
+   */
   async logout() {
     try {
       await fetch(`${this.baseURL}/auth/logout`, {
@@ -95,160 +108,158 @@ class ApiService {
         headers: this.getHeaders(),
       });
     } catch (error) {
-      console.error('Erreur de déconnexion:', error);
-    } finally {
-      // Le nettoyage localStorage est géré par useAuth
-      this.token = null;
+      // Ignorer les erreurs de déconnexion
     }
   }
 
-  // Tickets
+  /**
+   * Récupère tous les tickets depuis le backend
+   * @returns {Array} Liste des tickets normalisés
+   */
   async getTickets() {
     try {
-      const headers = this.getHeaders();
-      const url = `${this.baseURL}/ticket`;
-      
-      console.log('🔍 Tentative de récupération des tickets...');
-      console.log('📍 URL:', url);
-      console.log('🔑 Headers:', headers);
-      console.log('🌐 Base URL:', this.baseURL);
-      
-      const response = await fetch(url, {
+      const response = await fetch(`${this.baseURL}/ticket`, {
         method: 'GET',
-        headers: headers,
+        headers: this.getHeaders(),
       });
       
-      console.log('📡 Statut de la réponse:', response.status);
-      console.log('📡 Headers de la réponse:', response.headers);
-      
-      // Gestion spécifique des erreurs pour les tickets
       if (!response.ok) {
-        if (response.status === 404) {
-          console.error('❌ Endpoint non trouvé (404)');
-          console.error('🔍 URL tentée:', url);
-          console.error('🔍 Base URL configurée:', this.baseURL);
-          throw new Error(`Endpoint non trouvé (404) - URL: ${url}`);
-        } else if (response.status === 500) {
-          // Essayer de récupérer le message d'erreur du backend
-          try {
-            const errorData = await response.json();
-            throw new Error(`Erreur serveur 500: ${errorData.message || 'Problème de sérialisation JPA - Contactez l\'administrateur'}`);
-          } catch (parseError) {
-            throw new Error('Erreur serveur 500 - Problème de sérialisation JPA. Le backend nécessite une correction dans TicketRepo');
-          }
+        if (response.status === 500) {
+          throw new Error('Erreur serveur 500 - Problème de sérialisation JPA');
         } else if (response.status === 401) {
           throw new Error('Session expirée - Veuillez vous reconnecter');
-        } else if (response.status === 0) {
-          throw new Error('Impossible de se connecter au serveur - Vérifiez que le backend est démarré');
         } else {
           throw new Error(`Erreur serveur (${response.status}) - Vérifiez les logs du backend`);
         }
       }
       
-      const data = await response.json();
-      console.log('✅ Données reçues:', data);
-      return data;
+      const tickets = await response.json();
+      
+      // Normaliser les données pour s'assurer qu'elles ont la bonne structure
+      const normalizedTickets = this.normalizeTickets(tickets);
+      
+      return normalizedTickets;
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération des tickets:', error);
-      throw error;
+      throw new Error(`Erreur lors de la récupération des tickets: ${error.message}`);
     }
   }
 
+  /**
+   * Normalise les données des tickets pour assurer une structure cohérente
+   * @param {Array} tickets - Liste des tickets à normaliser
+   * @returns {Array} Tickets normalisés avec valeurs par défaut
+   */
+  normalizeTickets(tickets) {
+    if (!Array.isArray(tickets)) {
+      return tickets;
+    }
+
+    return tickets.map(ticket => {
+      // S'assurer que les objets imbriqués existent avec des valeurs par défaut
+      const normalizedTicket = {
+        id: ticket.id,
+        subject: ticket.subject || 'N/A',
+        claim: ticket.claim || '',
+        orderNumber: ticket.orderNumber || '',
+        priority: ticket.priority || 'NORMAL',
+        status: ticket.status || 'OPEN',
+        createdAt: ticket.createdAt,
+        updatedAt: ticket.updatedAt,
+        resolvedAt: ticket.resolvedAt,
+        type: ticket.type,
+        tags: ticket.tags || [],
+        // Normaliser les objets imbriqués
+        createdBy: ticket.createdBy ? {
+          id: ticket.createdBy.id,
+          username: ticket.createdBy.username || 'N/A'
+        } : { id: 0, username: 'N/A' },
+        assignedDepartment: ticket.assignedDepartment ? {
+          id: ticket.assignedDepartment.id,
+          name: ticket.assignedDepartment.name || 'N/A'
+        } : { id: 0, name: 'N/A' },
+        assignedAgent: ticket.assignedAgent ? {
+          id: ticket.assignedAgent.id,
+          username: ticket.assignedAgent.username || 'N/A'
+        } : null,
+        issue: ticket.issue ? {
+          id: ticket.issue.id,
+          name: ticket.issue.name || 'N/A'
+        } : { id: 0, name: 'N/A' },
+        source: ticket.source ? {
+          id: ticket.source.id,
+          name: ticket.source.name || 'N/A'
+        } : { id: 0, name: 'N/A' },
+        comments: ticket.comments || [],
+        history: ticket.history || []
+      };
+
+      return normalizedTicket;
+    });
+  }
+
+
+
+  /**
+   * Récupère un ticket spécifique par son ID
+   * @param {number} id - ID du ticket à récupérer
+   * @returns {Object} Ticket normalisé
+   */
   async getTicketById(id) {
     try {
-      const headers = this.getHeaders();
-      const url = `${this.baseURL}/ticket/${id}`;
-      
-      console.log('🔍 Tentative de récupération du ticket...');
-      console.log('📍 URL:', url);
-      console.log('🔑 Headers:', headers);
-      console.log('🆔 ID du ticket:', id);
-      
-      const response = await fetch(url, {
+      const response = await fetch(`${this.baseURL}/ticket/${id}`, {
         method: 'GET',
-        headers: headers,
+        headers: this.getHeaders(),
       });
       
-      console.log('📡 Statut de la réponse:', response.status);
-      
       if (!response.ok) {
-        if (response.status === 404) {
-          console.error('❌ Ticket non trouvé (404)');
-          throw new Error(`Ticket avec l'ID ${id} non trouvé`);
-        } else if (response.status === 500) {
-          try {
-            const errorData = await response.json();
-            console.error('❌ Erreur serveur 500:', errorData);
-            throw new Error(`Erreur serveur 500: ${errorData.message || 'Problème de sérialisation JPA - L\'endpoint /ticket/{id} nécessite une correction dans le backend'}`);
-          } catch (parseError) {
-            console.error('❌ Impossible de parser l\'erreur 500');
-            throw new Error('Erreur serveur 500 - L\'endpoint /ticket/{id} nécessite une correction dans le backend (TicketController ou TicketService)');
-          }
+        if (response.status === 500) {
+          throw new Error('Erreur serveur 500 - L\'endpoint /ticket/{id} nécessite une correction dans le backend');
         } else if (response.status === 401) {
           throw new Error('Session expirée - Veuillez vous reconnecter');
         } else if (response.status === 403) {
           throw new Error('Accès refusé - Vous n\'avez pas les permissions pour voir ce ticket');
-        } else if (response.status === 0) {
-          throw new Error('Impossible de se connecter au serveur - Vérifiez que le backend est démarré');
         } else {
           throw new Error(`Erreur serveur (${response.status}) - Vérifiez les logs du backend`);
         }
       }
       
-      const data = await response.json();
-      console.log('✅ Ticket récupéré:', data);
-      return data;
+      const ticket = await response.json();
+      
+      // Normaliser le ticket
+      const normalizedTicket = this.normalizeTickets([ticket])[0];
+      
+      return normalizedTicket;
     } catch (error) {
-      console.error(`❌ Erreur lors de la récupération du ticket ${id}:`, error);
-      throw error;
+      throw new Error(`Erreur lors de la récupération du ticket: ${error.message}`);
     }
   }
 
+
+
+  /**
+   * Crée un nouveau ticket dans le backend
+   * @param {Object} ticketData - Données du ticket à créer
+   * @returns {Object} Ticket créé
+   */
   async createTicket(ticketData) {
     try {
-      const headers = this.getHeaders();
-      const url = `${this.baseURL}/ticket`;
-      
-      console.log('🔍 Tentative de création de ticket...');
-      console.log('📍 URL:', url);
-      console.log('🔑 Headers:', headers);
-      console.log('📦 Données envoyées:', JSON.stringify(ticketData, null, 2));
-      console.log('🌐 Base URL:', this.baseURL);
-      
-      const response = await fetch(url, {
+      const response = await fetch(`${this.baseURL}/ticket`, {
         method: 'POST',
-        headers: headers,
+        headers: this.getHeaders(),
         body: JSON.stringify(ticketData),
       });
-      
-      console.log('📡 Statut de la réponse:', response.status);
-      console.log('📡 Headers de la réponse:', response.headers);
       
       if (!response.ok) {
         if (response.status === 500) {
           try {
             const errorData = await response.json();
-            console.error('❌ Erreur serveur 500 détaillée:', errorData);
-            console.error('❌ Message d\'erreur:', errorData.message);
-            console.error('❌ Erreur complète:', errorData.error);
-            console.error('❌ Stack trace:', errorData.trace);
-            throw new Error(`Erreur serveur 500: ${errorData.message || errorData.error || 'Problème lors de la création du ticket'}`);
+            throw new Error(`Erreur serveur 500: ${errorData.message || 'Problème lors de la création du ticket'}`);
           } catch (parseError) {
-            console.error('❌ Impossible de parser l\'erreur 500');
-            console.error('❌ Erreur de parsing:', parseError);
-            // Essayer de récupérer le texte brut
-            try {
-              const errorText = await response.text();
-              console.error('❌ Texte d\'erreur brut:', errorText);
-              throw new Error(`Erreur serveur 500 - Texte brut: ${errorText}`);
-            } catch (textError) {
-              throw new Error('Erreur serveur 500 - Problème lors de la création du ticket. Vérifiez les logs du backend.');
-            }
+            throw new Error('Erreur serveur 500 - Problème lors de la création du ticket. Vérifiez les logs du backend.');
           }
         } else if (response.status === 400) {
           try {
             const errorData = await response.json();
-            console.error('❌ Erreur 400 - Données invalides:', errorData);
             throw new Error(`Données invalides: ${errorData.message || 'Vérifiez les champs requis'}`);
           } catch (parseError) {
             throw new Error('Données invalides - Vérifiez les champs requis');
@@ -257,39 +268,38 @@ class ApiService {
           throw new Error('Session expirée - Veuillez vous reconnecter');
         } else if (response.status === 403) {
           throw new Error('Accès refusé - Vous n\'avez pas les permissions pour créer un ticket');
-        } else if (response.status === 404) {
-          throw new Error('Endpoint non trouvé - Vérifiez que l\'endpoint /ticket existe dans le backend');
         } else {
           throw new Error(`Erreur serveur (${response.status}) - Vérifiez les logs du backend`);
         }
       }
       
-      const data = await response.json();
-      console.log('✅ Ticket créé avec succès:', data);
-      return data;
+      return await response.json();
     } catch (error) {
-      console.error('❌ Erreur lors de la création du ticket:', error);
-      console.error('❌ Stack trace:', error.stack);
-      throw error;
+      throw new Error(`Erreur lors de la création du ticket: ${error.message}`);
     }
   }
 
+
+
+  /**
+   * Ferme un ticket en changeant son statut
+   * @param {number} id - ID du ticket à fermer
+   * @returns {Object} Ticket mis à jour
+   */
   async closeTicket(id) {
-    try {
-      const headers = this.getHeaders();
-      const response = await fetch(`${this.baseURL}/ticket/${id}/close`, {
-        method: 'PUT',
-        headers: headers,
-      });
-      
-      return await this.handleResponse(response);
-    } catch (error) {
-      console.error('Erreur lors de la fermeture du ticket:', error);
-      throw error;
-    }
+    const response = await fetch(`${this.baseURL}/ticket/${id}/close`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+    });
+    
+    return await this.handleResponse(response);
   }
 
-  // Rafraîchir le token
+  /**
+   * Rafraîchit le token JWT d'accès avec le refresh token
+   * Redirige vers login si le refresh échoue
+   * @returns {Object} Nouveau token d'accès
+   */
   async refreshToken() {
     try {
       const refreshToken = localStorage.getItem('refreshToken');
@@ -307,155 +317,175 @@ class ApiService {
         }),
       });
 
-      const data = await this.handleResponse(response);
+      if (!response.ok) {
+        throw new Error('Échec du refresh token');
+      }
+
+      const responseData = await response.json();
       
-      if (data.accessToken) {
-        this.token = data.accessToken;
-        localStorage.setItem('accessToken', data.accessToken);
-        if (data.refreshToken) {
-          localStorage.setItem('refreshToken', data.refreshToken);
-        }
+      if (responseData.accessToken) {
+        localStorage.setItem('accessToken', responseData.accessToken);
+        this.token = responseData.accessToken;
       }
       
-      return data;
+      return responseData;
     } catch (error) {
-      console.error('Erreur lors du rafraîchissement du token:', error);
+      // Nettoyer le localStorage et rediriger vers login
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('username');
+      localStorage.removeItem('userRole');
+      window.location.href = '/login';
       throw error;
     }
   }
 
-  // Vérifier la connexion au backend
-  async checkBackendConnection() {
-    try {
-      console.log('Test de connexion au backend:', `${this.baseURL}/auth/login`);
-      const response = await fetch(`${this.baseURL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'test',
-          password: 'test'
-        }),
-      });
-      
-      console.log('Statut de la réponse:', response.status);
-      // Si on reçoit une réponse (même 401), le backend est accessible
-      if (response.status === 401 || response.status === 400) {
-        console.log('Backend accessible (endpoint auth répond)');
-        return true;
-      } else if (response.ok) {
-        console.log('Backend accessible (connexion réussie)');
-        return true;
-      } else {
-        console.log('Backend non accessible, statut:', response.status);
-        return false;
-      }
-    } catch (error) {
-      console.error('Backend non accessible:', error);
-      return false;
-    }
-  }
-
-  // Données de référence pour les formulaires
+  /**
+   * Récupère la liste des types de problèmes depuis les données locales
+   * @returns {Array} Liste des problèmes avec ID, nom, description, etc.
+   */
   async getIssues() {
-    try {
-      const response = await fetch(`${this.baseURL}/issues`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
-      
-      if (response.ok) {
-        return await response.json();
-      } else {
-        console.warn('⚠️ Endpoint /issues non disponible, utilisation des données par défaut');
-        // Retourner les vraies données du backend data.json
-        return [
-          { id: 1, name: "Erreur Calcule", description: "", enabled: true, departmentId: 1 },
-          { id: 2, name: "Défaut teinte", description: "", enabled: true, departmentId: 1 },
-          { id: 3, name: "Retard livraison", description: "", enabled: true, departmentId: 1 },
-          { id: 4, name: "Erreur saisie", description: "", enabled: true, departmentId: 2 },
-          { id: 5, name: "Oublie validation", description: "", enabled: true, departmentId: 1 },
-          { id: 6, name: "information erroné", description: "", enabled: true, departmentId: 1 }
-        ];
-      }
-    } catch (error) {
-      console.warn('⚠️ Erreur lors de la récupération des problèmes, utilisation des données par défaut:', error);
-      // Retourner les vraies données du backend data.json
-      return [
-        { id: 1, name: "Erreur Calcule", description: "", enabled: true, departmentId: 1 },
-        { id: 2, name: "Défaut teinte", description: "", enabled: true, departmentId: 1 },
-        { id: 3, name: "Retard livraison", description: "", enabled: true, departmentId: 1 },
-        { id: 4, name: "Erreur saisie", description: "", enabled: true, departmentId: 2 },
-        { id: 5, name: "Oublie validation", description: "", enabled: true, departmentId: 1 },
-        { id: 6, name: "information erroné", description: "", enabled: true, departmentId: 1 }
-      ];
-    }
+    return data.issues.map((issue, index) => ({
+      id: index + 1,
+      name: issue.name,
+      description: issue.description,
+      enabled: issue.enabled,
+      departmentId: issue.departmentId
+    }));
   }
 
+  /**
+   * Récupère la liste des sources de tickets depuis les données locales
+   * @returns {Array} Liste des sources avec ID, nom, description, type
+   */
   async getSources() {
+    return data.sources.map((source, index) => ({
+      id: index + 1,
+      name: source.name,
+      description: source.description,
+      enabled: source.enabled,
+      type: source.type
+    }));
+  }
+
+  /**
+   * Récupère la liste des départements depuis les données locales
+   * @returns {Array} Liste des départements avec ID, nom, description
+   */
+  async getDepartments() {
+    return data.departments.map((department, index) => ({
+      id: index + 1,
+      name: department.name,
+      description: department.description,
+      enabled: department.enabled === "true" || department.enabled === true
+    }));
+  }
+
+  /**
+   * Récupère la stratégie d'affectation pour un département
+   * @param {number} departmentId - ID du département
+   * @returns {Object} Stratégie d'affectation avec nom et description
+   */
+  async getAssignmentStrategy(departmentId) {
+    const strategies = {
+      1: { strategy: 'ROUND_ROBIN', name: 'Round-Robin', description: 'Affectation alternée entre les agents' },
+      2: { strategy: 'LEAST_BUSY', name: 'Least-Busy', description: 'Affectation à l\'agent ayant le moins de tickets' }
+    };
+    
+    return strategies[departmentId] || { strategy: 'ROUND_ROBIN', name: 'Round-Robin', description: 'Stratégie par défaut' };
+  }
+
+  /**
+   * Met à jour la stratégie d'affectation des tickets
+   * @param {string} strategy - Nouvelle stratégie (ROUND_ROBIN, LEAST_BUSY)
+   * @returns {boolean} True si la mise à jour réussit
+   */
+  async updateAssignmentStrategy(strategy) {
     try {
-      const response = await fetch(`${this.baseURL}/sources`, {
-        method: 'GET',
+      const response = await fetch(`${this.baseURL}/admin/settings/assignment-strategy`, {
+        method: 'PUT',
         headers: this.getHeaders(),
+        body: JSON.stringify({ value: strategy }),
       });
       
-      if (response.ok) {
-        return await response.json();
-      } else {
-        console.warn('⚠️ Endpoint /sources non disponible, utilisation des données par défaut');
-        // Retourner les vraies données du backend data.json
-        return [
-          { id: 1, name: "WhatsApp", description: "Reclamation reçu par WhatsApp", enabled: true, type: "EXTERNAL" },
-          { id: 2, name: "Telephone", description: "Reclamation reçu par Telephone", enabled: true, type: "EXTERNAL" },
-          { id: 3, name: "Email", description: "Reclamation reçu par Email", enabled: true, type: "EXTERNAL" },
-          { id: 4, name: "Commercial", description: "Reclamation reçu a travers commercial", enabled: true, type: "EXTERNAL" },
-          { id: 5, name: "Stock", description: "Reclamation reçu a travers service Stock", enabled: true, type: "INTERNAL" },
-          { id: 6, name: "Montage", description: "Reclamation reçu a travers service Montage", enabled: true, type: "INTERNAL" }
-        ];
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Endpoint de mise à jour de stratégie non disponible');
+        } else if (response.status === 500) {
+          throw new Error('Erreur serveur 500 - Problème de mise à jour de la stratégie');
+        } else if (response.status === 401) {
+          throw new Error('Session expirée - Veuillez vous reconnecter');
+        } else {
+          throw new Error(`Erreur serveur (${response.status}) - Vérifiez les logs du backend`);
+        }
       }
+      
+      return true;
     } catch (error) {
-      console.warn('⚠️ Erreur lors de la récupération des sources, utilisation des données par défaut:', error);
-      // Retourner les vraies données du backend data.json
-      return [
-        { id: 1, name: "WhatsApp", description: "Reclamation reçu par WhatsApp", enabled: true, type: "EXTERNAL" },
-        { id: 2, name: "Telephone", description: "Reclamation reçu par Telephone", enabled: true, type: "EXTERNAL" },
-        { id: 3, name: "Email", description: "Reclamation reçu par Email", enabled: true, type: "EXTERNAL" },
-        { id: 4, name: "Commercial", description: "Reclamation reçu a travers commercial", enabled: true, type: "EXTERNAL" },
-        { id: 5, name: "Stock", description: "Reclamation reçu a travers service Stock", enabled: true, type: "INTERNAL" },
-        { id: 6, name: "Montage", description: "Reclamation reçu a travers service Montage", enabled: true, type: "INTERNAL" }
-      ];
+      throw error;
     }
   }
 
-  async getDepartments() {
+  /**
+   * Récupère la liste des rôles utilisateurs depuis le backend
+   * @returns {Array} Liste des rôles normalisés
+   */
+  async getRoles() {
     try {
-      const response = await fetch(`${this.baseURL}/departments`, {
+      const response = await fetch(`${this.baseURL}/roles`, {
         method: 'GET',
         headers: this.getHeaders(),
       });
       
-      if (response.ok) {
-        return await response.json();
-      } else {
-        console.warn('⚠️ Endpoint /departments non disponible, utilisation des données par défaut');
-        // Retourner les vraies données du backend data.json
-        return [
-          { id: 1, name: "Production Team", description: "lens production team", enabled: true },
-          { id: 2, name: "Customer Service", description: "customer service team", enabled: true }
-        ];
+      if (!response.ok) {
+        if (response.status === 500) {
+          throw new Error('Erreur serveur 500 - Problème de récupération des rôles');
+        } else if (response.status === 401) {
+          throw new Error('Session expirée - Veuillez vous reconnecter');
+        } else {
+          throw new Error(`Erreur serveur (${response.status}) - Vérifiez les logs du backend`);
+        }
       }
+      
+      const roles = await response.json();
+      
+      // Normaliser les données pour s'assurer qu'elles ont la bonne structure
+      const normalizedRoles = this.normalizeRoles(roles);
+      
+      return normalizedRoles;
     } catch (error) {
-      console.warn('⚠️ Erreur lors de la récupération des départements, utilisation des données par défaut:', error);
-      // Retourner les vraies données du backend data.json
-      return [
-        { id: 1, name: "Production Team", description: "lens production team", enabled: true },
-        { id: 2, name: "Customer Service", description: "customer service team", enabled: true }
-      ];
+      throw new Error(`Erreur lors de la récupération des rôles: ${error.message}`);
     }
   }
+
+  /**
+   * Normalise les données des rôles pour assurer une structure cohérente
+   * @param {Array} roles - Liste des rôles à normaliser
+   * @returns {Array} Rôles normalisés avec valeurs par défaut
+   */
+  normalizeRoles(roles) {
+    if (!Array.isArray(roles)) {
+      return roles;
+    }
+
+    return roles.map(role => {
+      // S'assurer que tous les champs requis existent avec des valeurs par défaut
+      const normalizedRole = {
+        id: role.id,
+        name: role.name || role.roleName || 'N/A',
+        description: role.description || 'Aucune description',
+        permissions: role.permissions || role.permissionList || [],
+        isDefault: role.isDefault !== undefined ? role.isDefault : false,
+        enabled: role.enabled !== undefined ? role.enabled : true
+      };
+
+      return normalizedRole;
+    });
+  }
+
+
 }
 
-// Instance singleton
+// Instance unique du service API pour toute l'application
 const apiService = new ApiService();
 export default apiService;

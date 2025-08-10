@@ -2,7 +2,7 @@
 // Il affiche un formulaire dans une modale pour créer un nouveau ticket avec gestion des champs, priorités et validation.
 // Utilisé pour l'ajout de tickets dans l'application.
 import React, { useState, useEffect } from "react";
-import { MdSave, MdClose } from "react-icons/md";
+import { MdSave, MdClose, MdInfo } from "react-icons/md";
 import { Select, TextInput, Textarea, SegmentedControl, TagsInput, Modal, Button, Group, Title, Alert } from '@mantine/core';
 import '@mantine/core/styles.css';
 import apiService from '../services/api';
@@ -12,19 +12,23 @@ export default function NewTicketForm({ onClose, onTicketCreated }) {
   const [type, setType] = useState("");
   const [tags, setTags] = useState([]);
   const [error, setError] = useState("");
-  const [departments, setDepartments] = useState([]);
   const [issues, setIssues] = useState([]);
   const [sources, setSources] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [formData, setFormData] = useState({
-    customer: "",
     subject: "",
-    departmentId: "",
+    departmentId: "", // Valeur par défaut vide
     issueId: "",
     orderNumber: "",
     type: "",
     sourceId: "",
     claim: ""
   });
+
+  // État pour filtrer les sources selon le type sélectionné
+  const [selectedType, setSelectedType] = useState("");
+  const [filteredSources, setFilteredSources] = useState([]);
+  const [assignmentStrategy, setAssignmentStrategy] = useState(null);
 
   const priorities = [
     { label: "LOW", color: "#b0bed9" },
@@ -46,12 +50,48 @@ export default function NewTicketForm({ onClose, onTicketCreated }) {
         setIssues(iss);
         setSources(srcs);
       } catch (error) {
-        console.error('Erreur lors du chargement des données de référence:', error);
+        setError('Impossible de charger les données de référence. Vérifiez que le backend est démarré.');
       }
     };
     
     loadReferenceData();
   }, []);
+
+  // Charger la stratégie d'affectation quand le département change
+  useEffect(() => {
+    const loadAssignmentStrategy = async () => {
+      if (formData.departmentId) {
+        try {
+          const strategy = await apiService.getAssignmentStrategy(parseInt(formData.departmentId));
+          setAssignmentStrategy(strategy);
+        } catch (error) {
+          setAssignmentStrategy({ strategy: 'ROUND_ROBIN', name: 'Round-Robin', description: 'Stratégie par défaut' });
+        }
+      } else {
+        setAssignmentStrategy(null);
+      }
+    };
+    
+    loadAssignmentStrategy();
+  }, [formData.departmentId]);
+
+  // Filtrer les sources quand le type change
+  useEffect(() => {
+    if (selectedType) {
+      const filtered = sources.filter(source => source.type === selectedType);
+      setFilteredSources(filtered);
+      // Réinitialiser la source sélectionnée si elle ne correspond plus au type
+      if (formData.sourceId) {
+        const currentSource = sources.find(s => s.id.toString() === formData.sourceId);
+        if (!currentSource || currentSource.type !== selectedType) {
+          setFormData({...formData, sourceId: ""});
+        }
+      }
+    } else {
+      setFilteredSources([]);
+      setFormData({...formData, sourceId: ""});
+    }
+  }, [selectedType, sources]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -74,29 +114,33 @@ export default function NewTicketForm({ onClose, onTicketCreated }) {
       setError("Le motif est requis");
       return;
     }
+    if (!selectedType) {
+      setError("Le type de ticket est requis");
+      return;
+    }
+    if (!formData.sourceId) {
+      setError("La source est requise");
+      return;
+    }
+    
+    // Vérifier que la source sélectionnée correspond au type choisi
+    const selectedSource = sources.find(s => s.id.toString() === formData.sourceId);
+    if (selectedSource && selectedSource.type !== selectedType) {
+      setError("La source sélectionnée ne correspond pas au type choisi");
+      return;
+    }
 
     try {
       const ticketData = {
         subject: formData.subject.trim(),
         claim: formData.claim.trim(),
-        orderNumber: formData.orderNumber?.trim() || null,
-        // Supprimer 'type' car il n'existe pas dans SaveTicketDto
+        orderNumber: formData.orderNumber?.trim() || "",
         priority: priority,
-        tags: tags,
-        // Utiliser les IDs comme attendu par le backend
+        tags: tags || [],
         departmentId: parseInt(formData.departmentId),
         issueId: parseInt(formData.issueId),
-        sourceId: formData.sourceId ? parseInt(formData.sourceId) : null
+        sourceId: parseInt(formData.sourceId)
       };
-
-      console.log('📋 Données du formulaire avant envoi:', ticketData);
-      console.log('🔍 Validation des données:');
-      console.log('- Subject:', ticketData.subject);
-      console.log('- Claim:', ticketData.claim);
-      console.log('- DepartmentId:', ticketData.departmentId);
-      console.log('- IssueId:', ticketData.issueId);
-      console.log('- Priority:', ticketData.priority);
-      console.log('- SourceId:', ticketData.sourceId);
 
       const newTicket = await apiService.createTicket(ticketData);
       
@@ -106,7 +150,6 @@ export default function NewTicketForm({ onClose, onTicketCreated }) {
       
       onClose();
     } catch (error) {
-      console.error('❌ Erreur dans handleSubmit:', error);
       setError(error.message || "Erreur lors de la création du ticket");
     }
   };
@@ -115,7 +158,7 @@ export default function NewTicketForm({ onClose, onTicketCreated }) {
     <Modal
       opened={true}
       onClose={onClose}
-      title={<Title order={3}>Nouveau ticket</Title>}
+      title="Nouveau ticket"
       size="lg"
       overlayProps={{ opacity: 0.55, blur: 3 }}
       centered
@@ -128,14 +171,6 @@ export default function NewTicketForm({ onClose, onTicketCreated }) {
         )}
         
         <Group grow mb="md">
-          <TextInput
-            label="Customer"
-            placeholder="Nom du client"
-            required
-            className="mantine-input"
-            value={formData.customer}
-            onChange={(e) => setFormData({...formData, customer: e.target.value})}
-          />
           <TextInput
             label="Ticket Subject"
             placeholder="Sujet du ticket"
@@ -203,16 +238,36 @@ export default function NewTicketForm({ onClose, onTicketCreated }) {
         </Group>
         <Group grow mb="md">
           <Select
+            label="Type de ticket"
+            placeholder="Choisir le type"
+            data={[
+              { value: 'EXTERNAL', label: 'Externe' },
+              { value: 'INTERNAL', label: 'Interne' }
+            ]}
+            required
+            className="mantine-select"
+            clearable
+            checkIconPosition="right"
+            value={selectedType}
+            onChange={(value) => {
+              setSelectedType(value);
+              setFormData({...formData, sourceId: ""});
+            }}
+          />
+          <Select
             label="Source"
-            placeholder="Choisir une source"
-            data={sources.map(source => ({ value: source.id.toString(), label: source.name }))}
+            placeholder={selectedType ? "Choisir une source" : "Sélectionnez d'abord le type"}
+            data={filteredSources.map(source => ({ value: source.id.toString(), label: source.name }))}
             className="mantine-select"
             clearable
             checkIconPosition="right"
             value={formData.sourceId}
             onChange={(value) => setFormData({...formData, sourceId: value})}
+            disabled={!selectedType}
+            required
           />
         </Group>
+
         <Textarea
           label="Claim"
           placeholder="Décrivez la réclamation"
@@ -224,27 +279,6 @@ export default function NewTicketForm({ onClose, onTicketCreated }) {
           onChange={(e) => setFormData({...formData, claim: e.target.value})}
         />
         <Group position="right" mt="md">
-          <Button 
-            variant="outline"
-            onClick={() => {
-              console.log('🧪 Test de l\'endpoint /ticket...');
-              const testData = {
-                subject: "Test ticket",
-                claim: "Test réclamation",
-                priority: "NORMAL",
-                departmentId: 1,
-                issueId: 1,
-                sourceId: 1,
-                tags: ["test", "debug"]
-              };
-              console.log('📦 Données de test:', testData);
-              apiService.createTicket(testData)
-                .then(result => console.log('✅ Test réussi:', result))
-                .catch(error => console.error('❌ Test échoué:', error));
-            }}
-          >
-            Test Endpoint
-          </Button>
           <Button 
             type="submit" 
             leftSection={<MdSave style={{ marginRight: 8, fontSize: '1.3em', verticalAlign: 'middle' }} />}

@@ -1,0 +1,128 @@
+{
+  "permissions": [
+    {  "name": "Close Ticket", "code": "CLOSE_TICKET" },
+    {  "name": "Assign Ticket", "code": "ASSIGN_TICKET" },
+    {  "name": "Create Ticket", "code": "CREATE_TICKET" },
+    {  "name": "View Reports", "code": "VIEW_REPORTS" },
+    {  "name": "View Department Tickets", "code": "VIEW_DEPARTMENT_TICKETS" },
+    {  "name": "View Assigned Tickets", "code": "VIEW_ASSIGNED_TICKETS" },
+    {  "name": "View All Tickets", "code": "VIEW_ALL_TICKETS" },
+    {  "name": "Update Ticket Priority", "code": "UPDATE_TICKET_PRIORITY" }
+
+  ],
+  "roles": [
+    {
+      "name": "ADMIN",
+      "permissions": ["Close Ticket", "Create Ticket", "Assign Ticket", "View Reports", "View All Tickets", "Update Ticket Priority"]
+    },
+    {
+      "name": "AGENT",
+      "permissions": ["Close Ticket", "Create Ticket", "View Assigned Tickets"]
+    }
+  ],
+  "departments": [
+    { "name": "Production Team", "description": "lens production team", "enabled": "true" },
+    { "name": "Customer Service", "description": "customer service team", "enabled": "true" }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "password": "admin1234",
+      "role": "ADMIN",
+      "department": 1,
+      "enabled": true
+    },
+    {
+      "username": "agent1",
+      "password": "agent1234",
+      "role": "AGENT",
+      "department": 1,
+      "enabled": true
+    },
+    {
+      "username": "agent2",
+      "password": "agent1234",
+      "role": "AGENT",
+      "department": 2,
+      "enabled": true
+    }
+  ],
+  "issues": [
+    {
+      "name": "Erreur Calcule",
+      "description": "",
+      "enabled": true,
+      "departmentId": 1
+    },
+    {
+      "name": "Défaut teinte",
+      "description": "",
+      "enabled": true,
+      "departmentId": 1
+    },
+    {
+      "name": "Retard livraison",
+      "description": "",
+      "enabled": true,
+      "departmentId": 1
+    },
+    {
+      "name": "Erreur saisie",
+      "description": "",
+      "enabled": true,
+      "departmentId": 2
+    },
+    {
+      "name": "Oublie validation",
+      "description": "",
+      "enabled": true,
+      "departmentId": 1
+    },
+    {
+      "name": "information erroné",
+      "description": "",
+      "enabled": true,
+      "departmentId": 1
+    }
+
+  ],
+  "sources": [
+    {
+      "name": "WhatsApp",
+      "description": "Reclamation reçu par WhatsApp",
+      "enabled": true,
+      "type": "EXTERNAL"
+    },
+    {
+      "name": "Telephone",
+      "description": "Reclamation reçu par Telephone",
+      "enabled": true,
+      "type": "EXTERNAL"
+    },
+    {
+      "name": "Email",
+      "description": "Reclamation reçu par Email",
+      "enabled": true,
+      "type": "EXTERNAL"
+    },
+    {
+      "name": "Commercial",
+      "description": "Reclamation reçu a travers commercial",
+      "enabled": true,
+      "type": "EXTERNAL"
+    },
+    {
+      "name": "Stock",
+      "description": "Reclamation reçu a travers service Stock",
+      "enabled": true,
+      "type": "INTERNAL"
+    },
+    {
+      "name": "Montage",
+      "description": "Reclamation reçu a travers service Montage",
+      "enabled": true,
+      "type": "INTERNAL"
+    }
+
+  ]
+}
