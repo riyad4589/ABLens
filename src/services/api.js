@@ -4,6 +4,7 @@
  */
 import { config } from '../config/config';
 import data from '../data/data.json';
+import { clearTokensOnAuthError } from '../utils/authUtils';
 
 const API_BASE_URL = config.API_BASE_URL;
 
@@ -39,16 +40,13 @@ class ApiService {
 
   /**
    * Gère les réponses HTTP et les erreurs communes
-   * Redirige vers login si le token est expiré (401)
+   * Nettoie automatiquement les tokens si le token est expiré (401)
    */
   handleResponse(response) {
     if (!response.ok) {
       if (response.status === 401) {
-        // Token expiré - nettoyer le localStorage et rediriger
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('username');
-        localStorage.removeItem('userRole');
+        // Token expiré - nettoyer complètement le localStorage
+        clearTokensOnAuthError();
         window.location.href = '/login';
         throw new Error('Session expirée');
       }
@@ -64,6 +62,9 @@ class ApiService {
    */
   async login(credentials) {
     try {
+      console.log("🌐 Tentative de connexion à:", `${this.baseURL}/auth/login`);
+      console.log("📤 Données envoyées:", { username: credentials.username, password: '***' });
+      
       const response = await fetch(`${this.baseURL}/auth/login`, {
         method: 'POST',
         headers: {
@@ -72,7 +73,10 @@ class ApiService {
         body: JSON.stringify(credentials),
       });
 
+      console.log("📥 Statut de la réponse:", response.status, response.statusText);
+
       if (!response.ok) {
+        console.log("❌ Erreur HTTP:", response.status);
         if (response.status === 401) {
           throw new Error('Nom d\'utilisateur ou mot de passe incorrect');
         } else if (response.status === 400) {
@@ -87,13 +91,16 @@ class ApiService {
       }
 
       const data = await response.json();
+      console.log("📨 Données reçues:", data);
       
       if (data.accessToken) {
         this.token = data.accessToken;
+        console.log("🔑 Token stocké dans apiService");
       }
       
       return data;
     } catch (error) {
+      console.error("💥 Erreur dans apiService.login:", error);
       throw error;
     }
   }
@@ -250,32 +257,12 @@ class ApiService {
       });
       
       if (!response.ok) {
-        if (response.status === 500) {
-          try {
-            const errorData = await response.json();
-            throw new Error(`Erreur serveur 500: ${errorData.message || 'Problème lors de la création du ticket'}`);
-          } catch (parseError) {
-            throw new Error('Erreur serveur 500 - Problème lors de la création du ticket. Vérifiez les logs du backend.');
-          }
-        } else if (response.status === 400) {
-          try {
-            const errorData = await response.json();
-            throw new Error(`Données invalides: ${errorData.message || 'Vérifiez les champs requis'}`);
-          } catch (parseError) {
-            throw new Error('Données invalides - Vérifiez les champs requis');
-          }
-        } else if (response.status === 401) {
-          throw new Error('Session expirée - Veuillez vous reconnecter');
-        } else if (response.status === 403) {
-          throw new Error('Accès refusé - Vous n\'avez pas les permissions pour créer un ticket');
-        } else {
-          throw new Error(`Erreur serveur (${response.status}) - Vérifiez les logs du backend`);
-        }
+        throw new Error('Erreur lors de la création du ticket');
       }
       
       return await response.json();
     } catch (error) {
-      throw new Error(`Erreur lors de la création du ticket: ${error.message}`);
+      throw new Error('Erreur lors de la création du ticket');
     }
   }
 
@@ -297,7 +284,7 @@ class ApiService {
 
   /**
    * Rafraîchit le token JWT d'accès avec le refresh token
-   * Redirige vers login si le refresh échoue
+   * Nettoie automatiquement les tokens si le refresh échoue
    * @returns {Object} Nouveau token d'accès
    */
   async refreshToken() {
@@ -330,11 +317,8 @@ class ApiService {
       
       return responseData;
     } catch (error) {
-      // Nettoyer le localStorage et rediriger vers login
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('username');
-      localStorage.removeItem('userRole');
+      // Nettoyer complètement le localStorage en cas d'échec
+      clearTokensOnAuthError();
       window.location.href = '/login';
       throw error;
     }

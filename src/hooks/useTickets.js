@@ -65,10 +65,14 @@ export const useTickets = () => {
     setError(null);
 
     const newTicket = await apiService.createTicket(ticketData);
+    
+    // Normaliser le nouveau ticket pour s'assurer qu'il a la bonne structure
+    const normalizedTicket = apiService.normalizeTickets([newTicket])[0];
+    
     // Ajouter le nouveau ticket à la liste locale
-    setTickets(prev => [...prev, newTicket]);
+    setTickets(prev => [normalizedTicket, ...prev]); // Ajouter au début de la liste
 
-    return newTicket;
+    return normalizedTicket;
   } catch (err) {
     setError(err.message);
     throw err;

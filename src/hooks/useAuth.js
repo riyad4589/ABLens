@@ -4,6 +4,7 @@
  */
 import { useState, useEffect } from 'react';
 import apiService from '../services/api';
+import { clearTokensOnStartup, clearTokensOnLogout } from '../utils/authUtils';
 
 export const useAuth = () => {
   // État de l'utilisateur connecté
@@ -15,54 +16,26 @@ export const useAuth = () => {
 
   /**
    * Vérifie l'authentification au chargement de l'application
-   * Teste la validité du token JWT stocké dans le localStorage
+   * Nettoie automatiquement les tokens au démarrage et teste la validité du token JWT
    */
   useEffect(() => {
-    const checkAuth = async () => {
-      // Récupérer les informations d'authentification du localStorage
-      const token = localStorage.getItem('accessToken');
-      const username = localStorage.getItem('username');
-      const role = localStorage.getItem('userRole');
-      
-      if (token) {
-        // Vérifier si le token est encore valide en testant un endpoint
-        try {
-          const testResponse = await fetch('http://localhost:8080/api/ticket', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (testResponse.ok) {
-            // Token valide - authentifier l'utilisateur
-            setIsAuthenticated(true);
-            setUser({ 
-              token,
-              username: username || 'Utilisateur',
-              role: role || 'USER'
-            });
-          } else {
-            // Token invalide - nettoyer le localStorage
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('username');
-            localStorage.removeItem('userRole');
-            setIsAuthenticated(false);
-            setUser(null);
-          }
-        } catch (error) {
-          // Erreur de connexion - déconnecter l'utilisateur
-          setIsAuthenticated(false);
-          setUser(null);
-        }
-      } else {
-        // Aucun token - utilisateur non authentifié
-        setIsAuthenticated(false);
-        setUser(null);
-      }
-      setLoading(false);
-    };
+  const checkAuth = async () => {
+
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      setIsAuthenticated(true);
+      setUser({
+        token,
+        username: localStorage.getItem('username'),
+        role: localStorage.getItem('userRole')
+      });
+    } else {
+      setIsAuthenticated(false);
+      setUser(null);
+    }
+
+    setLoading(false);
+  };
 
     checkAuth();
     
@@ -84,10 +57,15 @@ export const useAuth = () => {
    */
   const login = async (credentials) => {
     try {
+      console.log("🔐 Début de la fonction login dans useAuth");
       setLoading(true);
-      const response = await apiService.login(credentials);
       
-      if (response.accessToken) {
+      console.log("📡 Appel de apiService.login...");
+      const response = await apiService.login(credentials);
+      console.log("📨 Réponse de apiService.login:", response);
+      
+      if (response.accessToken || response.token) {
+        console.log("✅ Token reçu, authentification réussie");
         // Connexion réussie - mettre à jour l'état et le localStorage
         setIsAuthenticated(true);
         
@@ -103,35 +81,37 @@ export const useAuth = () => {
           role: response.role || 'USER'
         });
         
+        console.log("💾 Informations utilisateur stockées dans localStorage");
         return { success: true };
       } else {
+        console.log("❌ Pas de token dans la réponse:", response);
         return { success: false, message: response.message };
       }
     } catch (error) {
+      console.error("💥 Erreur dans la fonction login:", error);
       return { success: false, message: error.message };
     } finally {
       setLoading(false);
+      console.log("🏁 Fin de la fonction login");
     }
   };
 
   /**
-   * Déconnecte l'utilisateur et nettoie le localStorage
+   * Déconnecte l'utilisateur et nettoie complètement le localStorage
    */
   const logout = async () => {
     try {
       await apiService.logout();
     } catch (error) {
       // Ignorer les erreurs de déconnexion
+      console.log('Erreur lors de la déconnexion côté serveur:', error.message);
     } finally {
       // Mettre à jour l'état local
       setIsAuthenticated(false);
       setUser(null);
       
-      // Nettoyer le localStorage
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('username');
-      localStorage.removeItem('userRole');
+      // Nettoyer complètement le localStorage
+      clearTokensOnLogout();
     }
   };
 

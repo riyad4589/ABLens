@@ -124,6 +124,7 @@ export default function Ticket() {
   // Fonction pour créer un nouveau ticket
   const handleCreateTicket = async (ticketData) => {
     try {
+      console.log("📤 Données du ticket à créer:", ticketData);
       await createTicket(ticketData);
       setShowNewTicket(false);
       showNotification({
@@ -133,6 +134,7 @@ export default function Ticket() {
         autoClose: 3000,
       });
     } catch (error) {
+      console.error("💥 Erreur lors de la création:", error);
       showNotification({
         title: 'Erreur',
         message: `Erreur lors de la création: ${error.message}`,

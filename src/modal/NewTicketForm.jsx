@@ -15,6 +15,7 @@ export default function NewTicketForm({ onClose, onTicketCreated }) {
   const [issues, setIssues] = useState([]);
   const [sources, setSources] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     subject: "",
     departmentId: "", // Valeur par défaut vide
@@ -95,6 +96,13 @@ export default function NewTicketForm({ onClose, onTicketCreated }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Éviter la double soumission
+    if (isSubmitting) {
+      return;
+    }
+    
+    setIsSubmitting(true);
     setError("");
 
     // Validation des champs requis
@@ -131,26 +139,46 @@ export default function NewTicketForm({ onClose, onTicketCreated }) {
     }
 
     try {
+      // Récupérer les objets complets pour les relations
+      const selectedDepartment = departments.find(d => d.id.toString() === formData.departmentId);
+      const selectedIssue = issues.find(i => i.id.toString() === formData.issueId);
+      const selectedSource = sources.find(s => s.id.toString() === formData.sourceId);
+
+      if (!selectedDepartment || !selectedIssue || !selectedSource) {
+        setError("Données de référence invalides");
+        return;
+      }
+
+      // Vérifier que les IDs sont valides
+      if (!formData.departmentId || !formData.issueId || !formData.sourceId) {
+        setError("Veuillez sélectionner tous les champs requis");
+        return;
+      }
+
+      // Préparer les données selon le SaveTicketDto attendu par le backend
       const ticketData = {
         subject: formData.subject.trim(),
         claim: formData.claim.trim(),
         orderNumber: formData.orderNumber?.trim() || "",
         priority: priority,
+        type: selectedType,
         tags: tags || [],
+        // IDs pour les relations (format attendu par SaveTicketDto)
         departmentId: parseInt(formData.departmentId),
         issueId: parseInt(formData.issueId),
         sourceId: parseInt(formData.sourceId)
       };
 
-      const newTicket = await apiService.createTicket(ticketData);
-      
+      // Ne pas appeler apiService.createTicket ici, laisser le parent le faire
       if (onTicketCreated) {
-        onTicketCreated(newTicket);
+        onTicketCreated(ticketData);
       }
       
       onClose();
     } catch (error) {
       setError(error.message || "Erreur lors de la création du ticket");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -282,8 +310,10 @@ export default function NewTicketForm({ onClose, onTicketCreated }) {
           <Button 
             type="submit" 
             leftSection={<MdSave style={{ marginRight: 8, fontSize: '1.3em', verticalAlign: 'middle' }} />}
+            loading={isSubmitting}
+            disabled={isSubmitting}
           >
-            Enregistrer
+            {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
           </Button>
         </Group>
       </form>
