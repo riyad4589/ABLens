@@ -3,7 +3,7 @@ import { MdPerson, MdLock, MdVisibility, MdVisibilityOff } from "react-icons/md"
 import ablensLogo from "../assets/ablens2.jpg";
 import { useNavigate } from "react-router-dom";
 import { TextInput, PasswordInput, Button, Stack, Paper, Center, Alert } from '@mantine/core';
-import { useAuth } from "../hooks/useAuth";
+import { useLogin } from "../hooks/useAuthQuery";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -11,7 +11,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const loginMutation = useLogin();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,13 +34,8 @@ export default function Login() {
     }
 
     try {
-      const result = await login({ username: username.trim(), password });
-      
-      if (result.success) {
-        navigate("/dashboard");
-      } else {
-        setError(result.message || "Erreur de connexion");
-      }
+      await loginMutation.mutateAsync({ username: username.trim(), password });
+      navigate("/dashboard");
     } catch (error) {
       setError(error.message || "Erreur de connexion - Veuillez réessayer");
     }

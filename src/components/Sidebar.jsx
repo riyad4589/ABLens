@@ -20,12 +20,13 @@ import {
   Badge,
 } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
-import { useAuth } from '../hooks/useAuth';
+import { useAuthStatus, useLogout } from '../hooks/useAuthQuery';
 
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const { user } = useAuthStatus();
+  const logoutMutation = useLogout();
   
   // Récupérer le rôle de l'utilisateur
   const userRole = user?.role || 'AGENT';
@@ -69,8 +70,8 @@ export default function Sidebar() {
 
   const handleLogout = async () => {
     try {
-      // Appeler la fonction logout du hook useAuth
-      await logout();
+      // Appeler la mutation de déconnexion
+      await logoutMutation.mutateAsync();
       
       // Rediriger vers la page de login
       navigate('/login');

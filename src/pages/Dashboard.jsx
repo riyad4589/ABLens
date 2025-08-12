@@ -9,7 +9,7 @@ import CustomBarChart from "../components/BarChart";
 import DonutChart from "../components/DonutChart";
 import NewTicketForm from "../modal/NewTicketForm";
 import { Group, Button, Title, Card, Paper, Stack, Divider, Container, Alert, Text } from '@mantine/core';
-import { useAuth } from "../hooks/useAuth";
+import { useAuthStatus } from "../hooks/useAuthQuery";
 import { IconInfoCircle } from '@tabler/icons-react';
 
 export default function Dashboard() {
@@ -19,7 +19,7 @@ export default function Dashboard() {
   const [showNewTicket, setShowNewTicket] = useState(false);
   
   // Récupérer les informations de l'utilisateur connecté
-  const { user } = useAuth();
+  const { user } = useAuthStatus();
   const userRole = user?.role || 'AGENT'; // Par défaut AGENT si pas de rôle
   
   // Déterminer si l'utilisateur est admin

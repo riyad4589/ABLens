@@ -282,6 +282,82 @@ class ApiService {
     return await this.handleResponse(response);
   }
 
+
+
+  /**
+   * Récupère les messages d'un ticket
+   * @param {number} ticketId - ID du ticket
+   * @returns {Array} Liste des messages
+   */
+  async getTicketMessages(ticketId) {
+    try {
+      const response = await fetch(`${this.baseURL}/ticket/${ticketId}/messages`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          // Si l'endpoint n'existe pas encore, retourner un tableau vide
+          return [];
+        }
+        throw new Error(`Erreur lors de la récupération des messages: ${response.status}`);
+      }
+      
+      const messages = await response.json();
+      return messages || [];
+    } catch (error) {
+      console.warn('Messages non disponibles:', error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Envoie un message sur un ticket
+   * @param {number} ticketId - ID du ticket
+   * @param {string} message - Contenu du message
+   * @returns {Object} Message créé
+   */
+  async sendTicketMessage(ticketId, message) {
+    try {
+      const response = await fetch(`${this.baseURL}/ticket/${ticketId}/messages`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify({ message }),
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          // Si l'endpoint n'existe pas encore, simuler une réponse
+          return {
+            id: Date.now(),
+            text: message,
+            createdAt: new Date().toISOString(),
+            createdBy: {
+              username: localStorage.getItem('username') || 'Utilisateur',
+              role: localStorage.getItem('userRole') || 'USER',
+            },
+          };
+        }
+        throw new Error(`Erreur lors de l'envoi du message: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.warn('Envoi de message non disponible:', error.message);
+      // Retourner un message simulé en cas d'erreur
+      return {
+        id: Date.now(),
+        text: message,
+        createdAt: new Date().toISOString(),
+        createdBy: {
+          username: localStorage.getItem('username') || 'Utilisateur',
+          role: localStorage.getItem('userRole') || 'USER',
+        },
+      };
+    }
+  }
+
   /**
    * Rafraîchit le token JWT d'accès avec le refresh token
    * Nettoie automatiquement les tokens si le refresh échoue

@@ -8,7 +8,7 @@ import { MdClose } from "react-icons/md";
 import { FaStore, FaCity, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
 import { TextInput, Button, Badge, Group, Alert } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
-import { useTickets } from '../hooks/useTickets';
+import { useTicketById, useTicketMessages, useSendMessage, useTicketTimeline, useAddTimelineEvent } from '../hooks/useTicketsQuery';
 
 const priorityColors = {
   LOW: 'blue',
@@ -22,30 +22,30 @@ export default function TicketDetail() {
   const navigate = useNavigate();
   const [ticket, setTicket] = useState(null);
   const [error, setError] = useState(null);
-  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isClosed, setIsClosed] = useState(false);
   
-  // Utiliser le hook useTickets
-  const { fetchTicketById } = useTickets();
+  // Utiliser les hooks React Query pour récupérer le ticket et les messages
+  const { data: ticketData, isLoading, error: queryError } = useTicketById(id);
+  const { data: messages = [], isLoading: messagesLoading } = useTicketMessages(id);
+  const sendMessageMutation = useSendMessage();
+  const timeline = useTicketTimeline(ticketData);
+  const addTimelineEventMutation = useAddTimelineEvent();
 
-  // Charger les données du ticket
+  // Mettre à jour l'état local quand les données changent
   useEffect(() => {
-    const loadTicket = async () => {
-      try {
-        setError(null);
-        const ticketData = await fetchTicketById(id);
-        setTicket(ticketData);
-        setIsClosed(ticketData.status === 'CLOSED');
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-
-    if (id) {
-      loadTicket();
+    if (ticketData) {
+      setTicket(ticketData);
+      setIsClosed(ticketData.status === 'CLOSED');
     }
-  }, [id, fetchTicketById]);
+  }, [ticketData]);
+
+  // Gérer les erreurs
+  useEffect(() => {
+    if (queryError) {
+      setError(queryError.message);
+    }
+  }, [queryError]);
 
   // Affichage de l'erreur si problème
   if (error) {
@@ -96,21 +96,52 @@ export default function TicketDetail() {
     );
   }
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
-    if (input.trim() !== "") {
-      setMessages([...messages, { text: input, date: new Date() }]);
-      setInput("");
+    if (input.trim() !== "" && !sendMessageMutation.isPending) {
+      try {
+        await sendMessageMutation.mutateAsync({
+          ticketId: id,
+          message: input.trim()
+        });
+        setInput("");
+      } catch (error) {
+        console.error('Erreur lors de l\'envoi du message:', error);
+      }
     }
   };
 
-  const handleCloseTicket = () => {
-    setIsClosed(true);
-    setTimeout(() => navigate(-1), 400); // Petite pause pour feedback visuel
+  const handleCloseTicket = async () => {
+    try {
+      // Ajouter un événement à la timeline
+      await addTimelineEventMutation.mutateAsync({
+        ticketId: id,
+        event: {
+          text: 'Ticket fermé',
+          detail: 'Ticket fermé par l\'utilisateur',
+          icon: '🔒',
+          color: '#dc3545'
+        }
+      });
+      
+      setIsClosed(true);
+      setTimeout(() => navigate(-1), 400); // Petite pause pour feedback visuel
+    } catch (error) {
+      console.error('Erreur lors de la fermeture du ticket:', error);
+    }
   };
 
-  // Pour la démo, alterner l'expéditeur entre 'Vous' et 'Agent' selon l'index
-  const getSender = (idx) => idx % 2 === 0 ? { name: 'Vous', avatar: 'https://ui-avatars.com/api/?name=Vous&background=2176bd&color=fff' } : { name: 'Agent', avatar: 'https://ui-avatars.com/api/?name=Agent&background=b0bed9&color=fff' };
+  // Fonction pour obtenir les informations de l'expéditeur
+  const getSender = (message) => {
+    const currentUser = localStorage.getItem('username');
+    const isCurrentUser = message.createdBy?.username === currentUser;
+    
+    return {
+      name: isCurrentUser ? 'Vous' : (message.createdBy?.username || 'Agent'),
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(message.createdBy?.username || 'Agent')}&background=${isCurrentUser ? '2176bd' : 'b0bed9'}&color=fff`,
+      isCurrentUser
+    };
+  };
 
   return (
     <div style={{ background: '#f7f9fb', minHeight: '100vh' }}>
@@ -182,15 +213,35 @@ export default function TicketDetail() {
               </div>
               {/* Affichage des messages dans une zone scrollable */}
               <div style={{ maxWidth: 600, height: 'calc(32vh - 48px)', minHeight: 80, maxHeight: 'calc(100vh - 350px)', overflowY: 'auto', margin: '0 0 18px 0', background: '#fff', borderRadius: 8, padding: '8px 0' }}>
-                {messages && messages.length > 0 ? (
-                  messages.map((msg, idx) => {
-                    const sender = getSender(idx);
+                {messagesLoading ? (
+                  <div style={{ color: '#888', fontSize: 14, fontStyle: 'italic', textAlign: 'center', padding: '20px' }}>Chargement des messages...</div>
+                ) : messages && messages.length > 0 ? (
+                  messages.map((msg) => {
+                    const sender = getSender(msg);
                     return (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, background: '#fff', borderRadius: 8, padding: '10px 16px', margin: '0 12px 8px 12px', color: '#174189', fontSize: 15, boxShadow: '0 1px 4px rgba(24,49,83,0.04)' }}>
+                      <div key={msg.id} style={{ 
+                        display: 'flex', 
+                        alignItems: 'flex-start', 
+                        gap: 12, 
+                        background: '#fff', 
+                        borderRadius: 8, 
+                        padding: '10px 16px', 
+                        margin: '0 12px 8px 12px', 
+                        color: '#174189', 
+                        fontSize: 15, 
+                        boxShadow: '0 1px 4px rgba(24,49,83,0.04)',
+                        opacity: msg.isOptimistic ? 0.7 : 1
+                      }}>
                         <img src={sender.avatar} alt={sender.name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid #e0e6ed' }} />
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: 14, color: '#2176bd', marginBottom: 2 }}>{sender.name}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 600, fontSize: 14, color: '#2176bd', marginBottom: 2 }}>
+                            {sender.name}
+                            {msg.isOptimistic && <span style={{ fontSize: 12, color: '#888', marginLeft: 8 }}>(Envoi...)</span>}
+                          </div>
                           <div>{msg.text}</div>
+                          <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
+                            {new Date(msg.createdAt).toLocaleString('fr-FR')}
+                          </div>
                         </div>
                       </div>
                     );
@@ -205,13 +256,26 @@ export default function TicketDetail() {
               <div style={{ marginBottom: 32 }}>
                 <div style={{ fontWeight: 700, fontSize: 16, color: '#2176bd', marginBottom: 18 }}>Timeline</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', marginLeft: 12 }}>
-                  {ticket.timeline && ticket.timeline.length > 0 ? (
-                    ticket.timeline.map((event, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', position: 'relative', marginBottom: 24 }}>
+                  {timeline && timeline.length > 0 ? (
+                    timeline.map((event, idx) => (
+                      <div key={event.id} style={{ display: 'flex', alignItems: 'flex-start', position: 'relative', marginBottom: 24 }}>
                         {/* Ligne verticale */}
                         <div style={{ width: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-                          <div style={{ width: 12, height: 12, borderRadius: '50%', background: idx === 0 ? '#2176bd' : '#b0bed9', border: '2px solid #fff', boxShadow: '0 0 0 2px #2176bd22' }} />
-                          {idx < ticket.timeline.length - 1 && (
+                          <div style={{ 
+                            width: 12, 
+                            height: 12, 
+                            borderRadius: '50%', 
+                            background: event.color, 
+                            border: '2px solid #fff', 
+                            boxShadow: '0 0 0 2px #2176bd22',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '8px'
+                          }}>
+                            {event.icon}
+                          </div>
+                          {idx < timeline.length - 1 && (
                             <div style={{ width: 2, flex: 1, background: '#e0e6ed', margin: '2px 0 0 5px' }} />
                           )}
                         </div>
@@ -227,20 +291,7 @@ export default function TicketDetail() {
                   )}
                 </div>
               </div>
-              {/* Client Info en dessous */}
-              <div style={{ marginTop: 12 }}>
-                <div style={{ color: '#174189', fontWeight: 700, fontSize: 15, marginBottom: 10 }}>Client Info:</div>
-                {ticket.createdBy ? (
-                  <>
-                    <div style={{ color: '#222', fontSize: 15, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}><FaStore style={{ fontSize: 16 }} /><b style={{ marginLeft: 4 }}>Créé par:</b> {ticket.createdBy.username || 'N/A'}</div>
-                    <div style={{ color: '#222', fontSize: 15, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}><FaCity style={{ fontSize: 16 }} /><b style={{ marginLeft: 4 }}>Département:</b> {ticket.assignedDepartment?.name || 'Non assigné'}</div>
-                    <div style={{ color: '#222', fontSize: 15, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}><FaPhone style={{ fontSize: 16 }} /><b style={{ marginLeft: 4 }}>Statut:</b> {ticket.status || 'N/A'}</div>
-                    <div style={{ color: '#222', fontSize: 15, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}><FaMapMarkerAlt style={{ fontSize: 16 }} /><b style={{ marginLeft: 4 }}>Type:</b> {ticket.type || 'N/A'}</div>
-                  </>
-                ) : (
-                  <div style={{ color: '#888', fontSize: 14, fontStyle: 'italic' }}>Informations client non disponibles</div>
-                )}
-              </div>
+
             </div>
           </div>
         </div>
@@ -260,14 +311,21 @@ export default function TicketDetail() {
           }}
         >
           <TextInput
-            placeholder="type a comment"
+            placeholder="Tapez votre message..."
             value={input}
             onChange={e => setInput(e.target.value)}
             style={{ flex: 1 }}
+            disabled={sendMessageMutation.isPending}
           />
-          <Button type="submit" color="blue" style={{ fontWeight: 600, fontSize: 17, display: 'flex', alignItems: 'center', gap: 6 }}>
-            Envoyer
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path fill="#fff" d="M2 21l21-9-21-9v7l15 2-15 2v7z"/></svg>
+          <Button 
+            type="submit" 
+            color="blue" 
+            style={{ fontWeight: 600, fontSize: 17, display: 'flex', alignItems: 'center', gap: 6 }}
+            loading={sendMessageMutation.isPending}
+            disabled={!input.trim() || sendMessageMutation.isPending}
+          >
+            {sendMessageMutation.isPending ? 'Envoi...' : 'Envoyer'}
+            {!sendMessageMutation.isPending && <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path fill="#fff" d="M2 21l21-9-21-9v7l15 2-15 2v7z"/></svg>}
           </Button>
         </form>
       </main>

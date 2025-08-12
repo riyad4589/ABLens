@@ -1,13 +1,9 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuthStatus } from '../hooks/useAuthQuery';
 
 export default function PublicRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    return null; // Pas de loader, juste un écran vide
-  }
+  const { isAuthenticated } = useAuthStatus();
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;

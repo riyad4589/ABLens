@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import NewTicketForm from "../modal/NewTicketForm";
+
 import { MdConfirmationNumber } from "react-icons/md";
 import { Container, Group, Button, Title, Card, Center, Alert, Text, Stack } from '@mantine/core';
 import { createStyles } from '@mantine/styles';
@@ -13,7 +14,7 @@ import { comparePriority, compareStatus } from "../utils/sortUtils";
 import { DataTable } from 'mantine-datatable';
 import { IconEye, IconAlertCircle, IconLock, IconTicketOff, IconPlus } from '@tabler/icons-react';
 import { ActionIcon } from '@mantine/core';
-import { useTickets } from '../hooks/useTickets';
+import { useTickets, useCreateTicket, useCloseTicket } from '../hooks/useTicketsQuery';
 import { showNotification } from '@mantine/notifications';
 
 const PAGE_SIZE = 8;
@@ -96,14 +97,24 @@ export default function Ticket() {
   const [sortStatus, setSortStatus] = useState({ columnAccessor: 'subject', direction: 'asc' });
   const { classes } = useStyles();
   
-  // Utiliser le hook useTickets pour récupérer les données depuis l'API
-  const { tickets, loading, error, fetchTickets, createTicket, closeTicket } = useTickets();
+  // Utiliser les hooks React Query pour les tickets
+  const { data: tickets = [], isLoading: loading, error, refetch: fetchTickets } = useTickets();
+  const createTicketMutation = useCreateTicket();
+  const closeTicketMutation = useCloseTicket();
+  
+  // Vérifier les permissions de l'utilisateur
+  const userRole = localStorage.getItem('userRole');
+  const isAdmin = userRole === 'ADMIN';
+  const isAgent = userRole === 'AGENT';
+  
+  // Permissions basées sur le rôle
+  const canCloseTicket = isAdmin || isAgent; // Admin et Agent peuvent fermer les tickets
 
   // Fonction pour fermer un ticket
   const handleCloseTicket = async (ticketId, ticketSubject) => {
     if (window.confirm(`Êtes-vous sûr de vouloir fermer le ticket "${ticketSubject}" ?`)) {
       try {
-        await closeTicket(ticketId);
+        await closeTicketMutation.mutateAsync({ id: ticketId });
         showNotification({
           title: 'Ticket fermé',
           message: `Le ticket "${ticketSubject}" a été fermé avec succès`,
@@ -124,8 +135,7 @@ export default function Ticket() {
   // Fonction pour créer un nouveau ticket
   const handleCreateTicket = async (ticketData) => {
     try {
-      console.log("📤 Données du ticket à créer:", ticketData);
-      await createTicket(ticketData);
+      await createTicketMutation.mutateAsync(ticketData);
       setShowNewTicket(false);
       showNotification({
         title: 'Succès',
@@ -134,7 +144,6 @@ export default function Ticket() {
         autoClose: 3000,
       });
     } catch (error) {
-      console.error("💥 Erreur lors de la création:", error);
       showNotification({
         title: 'Erreur',
         message: `Erreur lors de la création: ${error.message}`,
@@ -143,6 +152,8 @@ export default function Ticket() {
       });
     }
   };
+
+
 
   // Trier les tickets
   const sortedTickets = [...tickets].sort((a, b) => {
@@ -215,9 +226,11 @@ export default function Ticket() {
       render: (ticket) => {
         let color = '#b0bed9', bg = '#f4f6fb', label = ticket.status;
         if (ticket.status === 'OPEN') { color = '#1ecb7b'; bg = '#eafaf3'; label = 'Ouvert'; }
-        else if (ticket.status === 'CLOSED') { color = '#b0bed9'; bg = '#f4f6fb'; label = 'Fermé'; }
         else if (ticket.status === 'ASSIGNED') { color = '#f7b731'; bg = '#fffbe6'; label = 'Assigné'; }
-        else if (ticket.status === 'PENDING') { color = '#f7b731'; bg = '#fffbe6'; label = 'En attente'; }
+        else if (ticket.status === 'ON_HOLD') { color = '#f7b731'; bg = '#fffbe6'; label = 'En attente'; }
+        else if (ticket.status === 'CANCELLED') { color = '#dc3545'; bg = '#fff0f0'; label = 'Annulé'; }
+        else if (ticket.status === 'RESOLVED') { color = '#28a745'; bg = '#eafaf3'; label = 'Résolu'; }
+        else if (ticket.status === 'CLOSED') { color = '#b0bed9'; bg = '#f4f6fb'; label = 'Fermé'; }
         return (
           <span style={{
             background: bg,
@@ -241,10 +254,9 @@ export default function Ticket() {
       width: 110,
       render: (ticket) => {
         let color = '#2176bd', bg = '#eaf2fa', label = ticket.priority;
-        if (ticket.priority === 'HIGH') { color = '#b8860b'; bg = '#fffbe6'; }
-        else if (ticket.priority === 'URGENT') { color = '#ff4d4f'; bg = '#fff0f0'; }
-        else if (ticket.priority === 'NORMAL') { color = '#2176bd'; bg = '#eaf2fa'; }
-        else if (ticket.priority === 'LOW') { color = '#b0bed9'; bg = '#f4f6fb'; }
+        if (ticket.priority === 'NORMAL') { color = '#2176bd'; bg = '#eaf2fa'; label = 'Normale'; }
+        else if (ticket.priority === 'HIGH') { color = '#b8860b'; bg = '#fffbe6'; label = 'Élevée'; }
+        else if (ticket.priority === 'URGENT') { color = '#ff4d4f'; bg = '#fff0f0'; label = 'Urgente'; }
         return (
           <span style={{
             background: bg,
@@ -321,6 +333,8 @@ export default function Ticket() {
               <IconEye size={22} />
             </ActionIcon>
           </Link>
+          
+
           
           <ActionIcon
             size={32}
@@ -466,6 +480,8 @@ export default function Ticket() {
             onTicketCreated={handleCreateTicket}
           />
         )}
+        
+
       </main>
     </div>
   );

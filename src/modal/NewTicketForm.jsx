@@ -32,7 +32,6 @@ export default function NewTicketForm({ onClose, onTicketCreated }) {
   const [assignmentStrategy, setAssignmentStrategy] = useState(null);
 
   const priorities = [
-    { label: "LOW", color: "#b0bed9" },
     { label: "NORMAL", color: "#2176bd" },
     { label: "HIGH", color: "#f7b731" },
     { label: "URGENT", color: "#ff4d4f" },

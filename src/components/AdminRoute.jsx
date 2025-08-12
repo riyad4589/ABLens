@@ -1,16 +1,12 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuthStatus } from '../hooks/useAuthQuery';
 import { Alert, Text, Button } from '@mantine/core';
 import { IconShieldLock } from '@tabler/icons-react';
 
 export default function AdminRoute({ children }) {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, user } = useAuthStatus();
   const location = useLocation();
-
-  if (loading) {
-    return null; // Pas de loader, juste un écran vide
-  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;

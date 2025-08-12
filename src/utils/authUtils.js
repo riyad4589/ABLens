@@ -48,9 +48,11 @@ export const hasAuthTokens = () => {
 /**
  * Nettoie automatiquement les tokens au démarrage de l'application
  * Appelé au chargement de l'app pour s'assurer qu'aucun token persistant n'existe
+ * Force la redirection vers la page de login
  */
 export const clearTokensOnStartup = () => {
-  clearAllAuthTokens('Démarrage du serveur');
+  clearAllAuthTokens('Démarrage du serveur - Redirection vers login');
+  console.log('🔄 Application redirigée vers la page de login au démarrage');
 };
 
 /**
